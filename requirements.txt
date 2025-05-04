@@ -7,3 +7,4 @@ psycopg==3.2.7
 python-dotenv==1.0.1
 sqlparse==0.5.3
 wheel==0.45.1
+whitenoise==6.9.0
