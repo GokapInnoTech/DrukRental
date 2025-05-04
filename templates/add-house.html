@@ -1,0 +1,134 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+
+<!--**********************************
+            Sidebar end
+        ***********************************-->
+
+<!--**********************************
+            Content body start
+        ***********************************-->
+
+<div class="page-wrapper">
+    <div class="content pt-5" style="margin-left: 200px;">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <h4 class="page-title">Add House</h4>
+            </div>
+        </div>
+        <div class="row pt-5">
+            <div class="col-lg-8 offset-lg-2">
+                <form action="/add-house/" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if msg %}
+                    <center style="color: red;">{{msg}}</center>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>HOUSE NO.</label>
+                                <input class="form-control" type="text" name="house_no" placeholder="House Number...."
+                                    required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>ROOM SIZE.</label>
+                                <input class="form-control" type="text" name="room_size" placeholder="Room Size...."
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>AREA</label>
+                                <input class="form-control" type="text" name="area" placeholder="Area.."
+                                    required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>CITY</label>
+                                <input class="form-control" type="text" name="city" placeholder="City .."
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>House Image 1</label>
+                                <input class="form-control" type="file" name="image1" required title="Primary house image" placeholder="Upload primary image">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>House Image 2</label>
+                                <input class="form-control" type="file" name="image2" required title="Secondary house image" placeholder="Upload secondary image">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>House Image 3 (Optional)</label>
+                                <input class="form-control" type="file" name="image3" title="Additional house image" placeholder="Upload additional image (optional)">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>House Image 4 (Optional)</label>
+                                <input class="form-control" type="file" name="image4" title="Additional house image" placeholder="Upload additional image (optional)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>PRICE</label>
+                                <input class="form-control" type="number" name="price" placeholder="Price.." required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>LOCATION</label>
+                                <input class="form-control" type="text" name="location" placeholder="Location from Google Map.."
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>PINCODE</label>
+                                <input class="form-control" type="number" name="pincode" placeholder="Pincode.." required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>STATE</label>
+                                <input class="form-control" type="text" name="state" placeholder="State.." required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="m-t-20 text-center">
+                        <button type="submit" class="btn btn-primary submit-btn">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+<!--**********************************
+        Scripts
+    ***********************************-->
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/user-panel/">User Panel</a></li>
+                <li class="breadcrumb-item active">Payment Success</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Success Message -->
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center py-5">
+                        <div class="success-icon mb-4">
+                            <i class="fas fa-check-circle fa-5x"></i>
+                        </div>
+                        <h2>Payment Successful!</h2>
+                        <p class="lead">Your rent payment for {{ payment.payment_month }} has been processed successfully.</p>
+                    </div>
+                </div>
+                
+                <!-- Payment Details -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4 class="card-title">Payment Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
+                                <p><strong>Date:</strong> {{ payment.payment_date|date:"d M Y, h:i A" }}</p>
+                                <p><strong>Payment Method:</strong> {{ payment.payment_method }}</p>
+                                <p><strong>Status:</strong> <span class="badge badge-success">{{ payment.status }}</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Property:</strong> {{ house.house_no }}, {{ house.area }}</p>
+                                <p><strong>Owner:</strong> {{ owner.user.first_name }} {{ owner.user.last_name }}</p>
+                                <p><strong>Month:</strong> {{ payment.payment_month }}</p>
+                                <p><strong>Amount:</strong> ₹{{ payment.amount }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Fee Breakdown -->
+                        <div class="mt-4">
+                            <h5>Payment Breakdown</h5>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr>
+                                        <td>Rent Amount</td>
+                                        <td class="text-right">₹{{ payment.amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Platform Fee (5%)</td>
+                                        <td class="text-right">₹{{ payment.platform_fee }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Amount to Owner</td>
+                                        <td class="text-right">₹{{ payment.amount_to_owner }}</td>
+                                    </tr>
+                                    <tr class="table-active">
+                                        <th>Total Paid</th>
+                                        <th class="text-right">₹{{ payment.amount }}</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center mt-4 mb-5">
+                    <a href="{% url 'payment-history' %}" class="btn btn-primary mr-2">
+                        <i class="fas fa-history mr-1"></i> View Payment History
+                    </a>
+                    <a href="{% url 'user-panel' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+                    </a>
+                </div>
+                
+                <!-- Email Notification -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="media">
+                            <i class="fas fa-envelope fa-2x text-info mr-3 mt-1"></i>
+                            <div class="media-body">
+                                <h5 class="mt-0">Email Confirmation Sent</h5>
+                                <p>
+                                    A payment confirmation has been sent to your email address
+                                    <strong>{{ payment.tenant.user.email }}</strong>. Please check your inbox for the receipt.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Support Information -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="media">
+                            <i class="fas fa-headset fa-2x text-warning mr-3 mt-1"></i>
+                            <div class="media-body">
+                                <h5 class="mt-0">Need Help?</h5>
+                                <p>
+                                    If you have any questions about this payment or need assistance, please contact our support team.
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Email:</strong> support@drukrental.com<br>
+                                    <strong>Phone:</strong> +91 8888888888
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        // Automatically redirect to dashboard after 60 seconds
+        setTimeout(function() {
+            window.location.href = "{% url 'user-panel' %}";
+        }, 60000);
+    });
+</script>
+{% endblock %} 

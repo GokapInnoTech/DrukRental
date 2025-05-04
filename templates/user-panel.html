@@ -1,0 +1,1304 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                <li class="breadcrumb-item active">Messages</li>
+            </ol>
+        </div>
+    </div>
+    
+    <!-- Debug section to check what data is available -->
+    <div class="debug-box" style="display: none;">
+        <h5>Debug Information</h5>
+        <p>Received messages: {% if user_messages %}{{ user_messages|length }}{% else %}0{% endif %}</p>
+        <p>All messages: {% if all_user_messages %}{{ all_user_messages|length }}{% else %}0{% endif %}</p>
+        <p>Unread messages: {{ unread_message_count|default:"0" }}</p>
+    </div>
+    
+    <!-- Summary Stats -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-1">
+                <h3>Unread Messages</h3>
+                <h2>{{ unread_message_count|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-2">
+                <h3>Total Conversations</h3>
+                <h2>{% if all_user_messages %}{{ all_user_messages|length }}{% else %}0{% endif %}</h2>
+                <div class="icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-3">
+                <h3>Properties Rented</h3>
+                <h2>{{ active_bookings|length|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-home"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-4">
+                <h3>Total Payments</h3>
+                <h2>{{ payments|length|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs for different sections -->
+    <ul class="nav nav-tabs mt-4" id="userPanelTabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="messages-tab" data-toggle="tab" href="#messages" aria-controls="messages" aria-selected="true">
+                <i class="fas fa-envelope mr-2"></i>Messages
+                {% if unread_message_count > 0 %}
+                <span class="badge badge-danger ml-1">{{ unread_message_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="properties-tab" data-toggle="tab" href="#properties" aria-controls="properties" aria-selected="false">
+                <i class="fas fa-home mr-2"></i>My Rentals
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments" aria-controls="payments" aria-selected="false">
+                <i class="fas fa-credit-card mr-2"></i>Payments
+                {% if pending_payments > 0 %}
+                <span class="badge badge-warning ml-1">{{ pending_payments }}</span>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="userPanelTabContent">
+        <!-- Messages Tab -->
+        <div class="tab-pane fade show active" id="messages" aria-labelledby="messages-tab">
+            <!-- Messages Section -->
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Messaging Center</h4>
+                    {% if unread_message_count > 0 %}
+                    <span class="badge badge-warning">{{ unread_message_count }} unread</span>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    <!-- Message Tabs -->
+                    <ul class="nav nav-tabs message-tabs" id="messageTab">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="inbox-tab" data-toggle="tab" href="#inbox">
+                                <i class="fas fa-inbox mr-2"></i>Inbox {% if unread_message_count > 0 %}<span class="badge badge-danger ml-1">{{ unread_message_count }}</span>{% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="sent-tab" data-toggle="tab" href="#sent">
+                                <i class="fas fa-paper-plane mr-2"></i>Sent
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="all-tab" data-toggle="tab" href="#all">
+                                <i class="fas fa-envelope-open-text mr-2"></i>All Messages
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="messageTabContent">
+                        <!-- Inbox Tab -->
+                        <div class="tab-pane fade show active" id="inbox">
+                            {% if user_messages %}
+                            <div class="message-list">
+                                {% for message in user_messages %}
+                                <div class="message-card {% if not message.is_read %}unread{% endif %}">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            <div class="sender-avatar">
+                                                {% if message.sender.profilePicture %}
+                                                <img src="{{ message.sender.profilePicture.url }}" alt="{{ message.sender.user.first_name }}">
+                                                {% else %}
+                                                <i class="fas fa-user"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>{{ message.sender.user.first_name }} {{ message.sender.user.last_name }}</h6>
+                                                <small>{{ message.sender.user.email }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            {% if not message.is_read %}
+                                            <span class="badge badge-warning ml-2">New</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        {% if not message.is_read %}
+                                        <a href="/mark-read/{{ message.id }}/" class="btn btn-info btn-mark-read">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </a>
+                                        {% endif %}
+                                        
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#replyModal{{ message.id }}">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Reply Modal -->
+                                <div class="modal fade" id="replyModal{{ message.id }}" tabindex="-1" role="dialog" aria-labelledby="replyModalLabel{{ message.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="replyModalLabel{{ message.id }}">
+                                                    Reply to {{ message.sender.user.first_name }}
+                                                </h5>
+                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="/reply-message/{{ message.id }}/" method="POST" class="reply-form" id="replyForm{{ message.id }}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <!-- Alert for form feedback -->
+                                                    <div class="alert alert-success reply-success" style="display: none;">
+                                                        <i class="fas fa-check-circle mr-2"></i> Your reply has been sent successfully!
+                                                    </div>
+                                                    <div class="alert alert-danger reply-error" style="display: none;">
+                                                        <i class="fas fa-exclamation-circle mr-2"></i> There was an error sending your reply. Please try again.
+                                                    </div>
+                                                    
+                                                    <!-- Technical Information (Collapsed by default) -->
+                                                    <div class="mb-3">
+                                                        <a class="text-muted small" data-toggle="collapse" href="#techInfo{{ message.id }}" role="button">
+                                                            <i class="fas fa-info-circle"></i> Show technical details
+                                                        </a>
+                                                        <div class="collapse mt-2" id="techInfo{{ message.id }}">
+                                                            <div class="card card-body bg-light">
+                                                                <small>
+                                                                    <p class="mb-1"><strong>Message ID:</strong> {{ message.id }}</p>
+                                                                    <p class="mb-1"><strong>Sender ID:</strong> {{ message.sender.id }}</p>
+                                                                    <p class="mb-1"><strong>House ID:</strong> {{ message.house.id }}</p>
+                                                                    <p class="mb-1"><strong>Endpoint:</strong> /reply-message/{{ message.id }}/</p>
+                                                                    <p class="mb-0"><strong>Method:</strong> POST</p>
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Conversation Thread -->
+                                                    <div class="conversation-thread mb-4">
+                                                        <h6 class="text-muted mb-3">Conversation History</h6>
+                                                        <div class="timeline">
+                                                            <div class="timeline-item">
+                                                                <div class="timeline-item-content incoming">
+                                                                    <div class="message-meta d-flex justify-content-between align-items-center mb-2">
+                                                                        <span><strong>{{ message.sender.user.first_name }}</strong></span>
+                                                                        <small class="text-muted">{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}</small>
+                                                                    </div>
+                                                                    <div class="original-message">
+                                                                        <p class="mb-0">{{ message.message }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Previous replies would appear here -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Hidden fields for context -->
+                                                    <input type="hidden" name="conversation_id" value="{{ message.id }}">
+                                                    <input type="hidden" name="recipient_id" value="{{ message.sender.id }}">
+                                                    <input type="hidden" name="house_id" value="{{ message.house.id }}">
+                                                    <input type="hidden" name="recipient_email" value="{{ message.sender.user.email }}">
+                                                    <input type="hidden" name="subject" value="Re: Inquiry about {{ message.house.house_no }}">
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="reply{{ message.id }}">Your Reply:</label>
+                                                        <textarea class="form-control" id="reply{{ message.id }}" name="reply" rows="4" required placeholder="Type your response here..."></textarea>
+                                                        <div class="invalid-feedback">
+                                                            Please enter a message to reply.
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="mr-3">
+                                                            <i class="fas fa-info-circle text-info mr-1"></i>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            Your reply will be sent to {{ message.sender.user.first_name }}'s email ({{ message.sender.user.email }}) and will be available in their message inbox.
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary send-reply-btn">
+                                                        <i class="fas fa-paper-plane mr-1"></i> Send Reply
+                                                        <span class="spinner-border spinner-border-sm ml-1" role="status" style="display: none;">
+                                                            <span class="sr-only">Loading...</span>
+                                                        </span>
+                                                    </button>
+                                                    <!-- Fallback button that appears if AJAX fails -->
+                                                    <button type="button" class="btn btn-success direct-submit-btn" style="display: none;">
+                                                        <i class="fas fa-paper-plane mr-1"></i> Send Directly
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-inbox fa-4x text-muted mb-4"></i>
+                                    <h4>No messages yet</h4>
+                                    <p class="text-muted">You don't have any messages from property owners yet.</p>
+                                    <a href="/rent-house/" class="btn btn-primary mt-3">
+                                        <i class="fas fa-search mr-1"></i> Browse Properties
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Sent Tab -->
+                        <div class="tab-pane fade" id="sent">
+                            {% if all_user_messages %}
+                            <div class="message-list">
+                                {% for message in all_user_messages %}
+                                {% if message.sender == request.user.userprofile_set.first %}
+                                <div class="message-card">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            <div class="sender-avatar" style="background-color: #5bc0de;">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>To: {{ message.receiver.user.first_name }} {{ message.receiver.user.last_name }}</h6>
+                                                <small>{{ message.receiver.user.email }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            <span class="badge badge-info ml-2">Sent</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-paper-plane fa-4x text-muted mb-4"></i>
+                                    <h4>No sent messages</h4>
+                                    <p class="text-muted">You haven't sent any messages to property owners yet.</p>
+                                    <a href="/rent-house/" class="btn btn-primary mt-3">
+                                        <i class="fas fa-search mr-1"></i> Browse Properties
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- All Messages Tab -->
+                        <div class="tab-pane fade" id="all">
+                            {% if all_user_messages %}
+                            <div class="message-list">
+                                {% for message in all_user_messages %}
+                                <div class="message-card {% if not message.is_read and message.receiver == request.user.userprofile_set.first %}unread{% endif %}">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            {% if message.sender == request.user.userprofile_set.first %}
+                                            <div class="sender-avatar" style="background-color: #5bc0de;">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>To: {{ message.receiver.user.first_name }} {{ message.receiver.user.last_name }}</h6>
+                                                <small>{{ message.receiver.user.email }}</small>
+                                            </div>
+                                            {% else %}
+                                            <div class="sender-avatar">
+                                                {% if message.sender.profilePicture %}
+                                                <img src="{{ message.sender.profilePicture.url }}" alt="{{ message.sender.user.first_name }}">
+                                                {% else %}
+                                                <i class="fas fa-user"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>From: {{ message.sender.user.first_name }} {{ message.sender.user.last_name }}</h6>
+                                                <small>{{ message.sender.user.email }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            {% if message.sender == request.user.userprofile_set.first %}
+                                            <span class="badge badge-info ml-2">Sent</span>
+                                            {% elif not message.is_read %}
+                                            <span class="badge badge-warning ml-2">New</span>
+                                            {% else %}
+                                            <span class="badge badge-success ml-2">Read</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        {% if message.receiver == request.user.userprofile_set.first and not message.is_read %}
+                                        <a href="/mark-read/{{ message.id }}/" class="btn btn-info btn-mark-read">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if message.receiver == request.user.userprofile_set.first %}
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#replyModal{{ message.id }}">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        {% endif %}
+                                        
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                    </div>
+                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-envelope fa-4x text-muted mb-4"></i>
+                                    <h4>No messages</h4>
+                                    <p class="text-muted">You don't have any messages yet.</p>
+                                    <a href="/rent-house/" class="btn btn-primary mt-3">
+                                        <i class="fas fa-search mr-1"></i> Browse Properties
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Tab -->
+        <div class="tab-pane fade" id="properties" aria-labelledby="properties-tab">
+            <!-- Rented Properties Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">My Rented Properties</h4>
+                </div>
+                <div class="card-body">
+                    {% if active_bookings %}
+                    <div class="row">
+                        {% for booking in active_bookings %}
+                        <div class="col-lg-6 col-md-12 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">{{ booking.house.house_no }}, {{ booking.house.area }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {% if booking.house.image1 %}
+                                            <img src="{{ booking.house.image1.url }}" class="img-fluid rounded" alt="{{ booking.house.house_no }}">
+                                            {% else %}
+                                            <div class="placeholder-image bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                <i class="fas fa-home fa-4x text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>City:</strong> {{ booking.house.city }}</p>
+                                            <p><strong>Room Size:</strong> {{ booking.house.room_size }}</p>
+                                            <p><strong>Monthly Rent:</strong> ₹{{ booking.house.price }}</p>
+                                            <p><strong>Status:</strong> <span class="badge badge-success">Rented</span></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6>Owner Details</h6>
+                                        <p><strong>Name:</strong> {{ booking.house.user.user.first_name }} {{ booking.house.user.user.last_name }}</p>
+                                        <p><strong>Contact:</strong> {{ booking.house.user.contact_No }}</p>
+                                    </div>
+                                    
+                                    <!-- Payment Status -->
+                                    <div class="mt-3">
+                                        <h6>Payment Status for {{ booking.house.price|floatformat:2 }}</h6>
+                                        {% with has_paid=False %}
+                                        {% for payment in payments %}
+                                        {% if payment.booking.id == booking.id and payment.payment_month == now|date:"F Y" %}
+                                        {% with has_paid=True %}
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle mr-2"></i> Rent paid for {{ payment.payment_month }}
+                                        </div>
+                                        {% endwith %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if not has_paid %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle mr-2"></i> Rent for current month not paid yet
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <a href="{% url 'view-house' booking.house.id %}" class="btn btn-info">
+                                        <i class="fas fa-eye mr-1"></i> View Details
+                                    </a>
+                                    
+                                    {% with has_pending=False %}
+                                    {% for payment in payments %}
+                                    {% if payment.booking.id == booking.id and payment.status == 'Pending' %}
+                                    {% with has_pending=True %}
+                                    <a href="{% url 'process-payment' payment.id %}" class="btn btn-primary">
+                                        <i class="fas fa-credit-card mr-1"></i> Complete Payment
+                                    </a>
+                                    {% endwith %}
+                                    {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if not has_pending %}
+                                    <a href="{% url 'initiate-payment' booking.id %}" class="btn btn-success">
+                                        <i class="fas fa-credit-card mr-1"></i> Pay Rent
+                                    </a>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i> You don't have any active rentals.
+                        <p class="mt-2 mb-0">
+                            Browse available properties and book a house to see it here.
+                            <a href="{% url 'rent-house' %}" class="btn btn-primary btn-sm ml-2">Browse Properties</a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div class="tab-pane fade" id="payments" aria-labelledby="payments-tab">
+            <!-- Payment Overview -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">Payment Overview</h4>
+                </div>
+                <div class="card-body">
+                <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">₹{{ total_paid|floatformat:2 }}</h3>
+                                    <p class="mb-0">Total Paid</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ pending_payments }}</h3>
+                                    <p class="mb-0">Pending Payments</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ payments|length }}</h3>
+                                    <p class="mb-0">Total Transactions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Payments -->
+                    <div class="mt-4">
+                        <h5>Recent Payments</h5>
+                        {% if payments %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Property</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments|slice:":5" %}
+                                    <tr>
+                                        <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                                        <td>{{ payment.booking.house.house_no }}, {{ payment.booking.house.area }}</td>
+                                        <td>₹{{ payment.amount }}</td>
+                                        <td>
+                                            {% if payment.status == 'Completed' %}
+                                            <span class="badge badge-success">{{ payment.status }}</span>
+                                            {% elif payment.status == 'Pending' %}
+                                            <span class="badge badge-warning">{{ payment.status }}</span>
+                                            {% else %}
+                                            <span class="badge badge-secondary">{{ payment.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.status == 'Pending' %}
+                                            <a href="{% url 'process-payment' payment.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-credit-card mr-1"></i> Pay
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'payment-success' payment.id %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-receipt mr-1"></i> Receipt
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'payment-history' %}" class="btn btn-primary">
+                                <i class="fas fa-history mr-1"></i> View Full Payment History
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i> No payment records found.
+                            <p class="mt-2 mb-0">
+                                When you make rent payments, your payment history will appear here.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Payment Methods -->
+                    <div class="mt-5">
+                        <h5>Payment Methods</h5>
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-cc-visa fa-3x text-primary mb-3"></i>
+                                        <h6>Credit/Debit Card</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-university fa-3x text-success mb-3"></i>
+                                        <h6>Net Banking</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-mobile-alt fa-3x text-warning mb-3"></i>
+                                        <h6>UPI</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-wallet fa-3x text-danger mb-3"></i>
+                                        <h6>Wallet</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Dashboard Styling */
+    :root {
+        --primary-color: #7571f9;
+        --primary-light: #9097fb;
+        --primary-dark: #5a57c2;
+        --secondary-color: #fac564;
+        --success-color: #2bc155;
+        --info-color: #5bc0de;
+        --warning-color: #f1b44c;
+        --danger-color: #f44336;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 10px;
+        --card-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        --hover-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .content-body {
+        padding: 1.875rem;
+    }
+    
+    /* Card Design */
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: none;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-3px);
+    }
+    
+    .card-header {
+        border-top-left-radius: var(--border-radius) !important;
+        border-top-right-radius: var(--border-radius) !important;
+        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+        color: white;
+        border: none;
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Dashboard Stats Cards */
+    .stat-card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 25px;
+        margin-bottom: 25px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .gradient-1 {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+    }
+    
+    .gradient-2 {
+        background: linear-gradient(to right, #f6d365, #fda085);
+    }
+    
+    .gradient-3 {
+        background: linear-gradient(to right, #43e97b, #38f9d7);
+    }
+    
+    .gradient-4 {
+        background: linear-gradient(to right, #f093fb, #f5576c);
+    }
+    
+    .stat-card h3 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+    
+    .stat-card h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .stat-card .icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 30px;
+        opacity: 0.3;
+    }
+    
+    /* Message List */
+    .message-tabs {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        border-bottom: 3px solid var(--primary-color);
+        color: var(--primary-color);
+        background: transparent;
+    }
+    
+    .message-list {
+        margin-top: 20px;
+    }
+    
+    .message-card {
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .message-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    
+    .message-card.unread {
+        border-left: 4px solid var(--warning-color);
+        background-color: rgba(241, 180, 76, 0.05);
+    }
+    
+    .message-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .message-sender {
+        display: flex;
+        align-items: center;
+    }
+    
+    .sender-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 15px;
+        overflow: hidden;
+    }
+    
+    .sender-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .sender-info h6 {
+        margin-bottom: 2px;
+        font-weight: 600;
+    }
+    
+    .sender-info small {
+        color: #6c757d;
+    }
+    
+    .message-meta {
+        display: flex;
+        align-items: center;
+    }
+    
+    .message-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .message-content {
+        padding: 20px;
+    }
+    
+    .message-property {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .property-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: var(--light-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 15px;
+        color: var(--primary-color);
+    }
+    
+    .property-info h6 {
+        margin-bottom: 0;
+        font-weight: 600;
+    }
+    
+    .property-info p {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .message-text {
+        margin-bottom: 15px;
+    }
+    
+    /* Button Styling - Enhanced */
+    .btn {
+        border-radius: 6px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(45deg, #6c757d, #868e96);
+        border: none;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(45deg, #5a6268, #6c757d);
+    }
+    
+    .btn-info {
+        background: linear-gradient(45deg, var(--info-color), #7fccde);
+        border: none;
+    }
+    
+    .btn-info:hover {
+        background: linear-gradient(45deg, #46b8da, var(--info-color));
+    }
+    
+    .message-actions {
+        display: flex;
+        gap: 10px;
+        padding: 10px 20px 20px;
+    }
+    
+    .message-actions .btn {
+        flex: 1;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .message-actions .btn i {
+        margin-right: 8px;
+    }
+    
+    /* Modal Styling */
+    .modal-content {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .modal-header {
+        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+        color: white;
+        border: none;
+    }
+    
+    .modal-title {
+        font-weight: 600;
+    }
+    
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding: 15px 25px;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 60px;
+        color: #e9ecef;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h4 {
+        font-size: 20px;
+        color: #343a40;
+    }
+    
+    .empty-state p {
+        color: #6c757d;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .debug-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    /* Conversation Thread */
+    .conversation-thread {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 15px;
+        width: 2px;
+        background: rgba(0,0,0,0.1);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-item:before {
+        content: "";
+        position: absolute;
+        left: -34px;
+        top: 10px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        border: 2px solid white;
+    }
+    
+    .timeline-item-content {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .timeline-item-content.incoming {
+        border-left: 3px solid var(--info-color);
+    }
+    
+    .timeline-item-content.outgoing {
+        border-left: 3px solid var(--success-color);
+    }
+    
+    /* Alerts */
+    .alert-success {
+        background-color: #e6f4ea;
+        border-color: #c6e7d4;
+        color: #2e7d32;
+    }
+    
+    .alert-danger {
+        background-color: #fdede8;
+        border-color: #f9c8c1;
+        color: #d32f2f;
+    }
+    
+    /* Form validation */
+    .form-control.is-invalid {
+        border-color: var(--danger-color);
+        background-image: none;
+    }
+    
+    /* Debug box */
+    .debug-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+</style>
+
+{% block extrajs %}
+<!-- Load messages.js with a fallback -->
+<script>
+    // Function to load scripts with fallback
+    function loadScript(src, fallbackSrc) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onerror = function() {
+            console.warn('Failed to load script from primary source: ' + src);
+            if (fallbackSrc) {
+                console.log('Trying fallback source: ' + fallbackSrc);
+                var fallbackScript = document.createElement('script');
+                fallbackScript.src = fallbackSrc;
+                fallbackScript.onerror = function() {
+                    console.error('Failed to load script from fallback source: ' + fallbackSrc);
+                };
+                document.head.appendChild(fallbackScript);
+            }
+        };
+        document.head.appendChild(script);
+    }
+
+    // Load messages.js with fallback
+    loadScript("{% static 'AdminStatic/js/messages.js' %}", "{% static 'js/messages.js' %}");
+</script>
+
+<!-- Additional script to fix reply loading issue -->
+<script>
+    // Global AJAX error handling
+    $(document).ajaxError(function(event, jqXHR, settings, thrownError) {
+        console.error('Global AJAX error handler caught an error:');
+        console.error('Status:', jqXHR.status, 'Error:', thrownError);
+        console.error('URL:', settings.url);
+        
+        // Show a global notification for server errors
+        if (jqXHR.status === 500) {
+            const notification = $(`
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Server error detected. Please try again later or contact support.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+            $('body').append(notification);
+            
+            // Remove notification after 8 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 8000);
+        }
+    });
+
+    // Check for the presence of error parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+        alert('An error occurred: ' + urlParams.get('error'));
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Fix for reply form loading issue
+    $(document).ready(function() {
+        // Ensure all spinners are properly initialized and hidden by default
+        $('.send-reply-btn .spinner-border').hide();
+        $('.direct-submit-btn').hide();
+        
+        // Direct form submission for reliability
+        $('.reply-form').each(function() {
+            const form = $(this);
+            
+            // Add fallback button handler
+            form.find('.direct-submit-btn').on('click', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = $(this);
+                submitBtn.prop('disabled', true).text('Sending...');
+                
+                // Clear any error display
+                form.find('.reply-error').hide();
+                
+                console.log('Using direct submission via fallback button');
+                
+                // Set target to avoid infinite redirect
+                form.attr('target', '_blank');
+                
+                // Submit the form directly
+                form[0].submit();
+                
+                // Close the modal after submission
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false).text('Send Directly');
+                    form.closest('.modal').modal('hide');
+                    
+                    // Show success toast
+                    const notification = $(`
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+                            <i class="fas fa-check-circle mr-2"></i> Message sent in new tab.
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    `);
+                    $('body').append(notification);
+                    
+                    // Remove notification after 5 seconds
+                    setTimeout(function() {
+                        notification.alert('close');
+                    }, 5000);
+                }, 1500);
+            });
+            
+            // AJAX error event handler - shows the fallback button
+            $(document).on('ajaxError', function(event, jqXHR, settings) {
+                // Only handle errors from this form's submission
+                if (settings.url === form.attr('action')) {
+                    console.log('AJAX error detected for form, enabling fallback button');
+                    form.find('.direct-submit-btn').show();
+                    form.find('.send-reply-btn').prop('disabled', false);
+                    form.find('.send-reply-btn .spinner-border').hide();
+                }
+            });
+        });
+        
+        // Fix for any forms that might be stuck
+        setTimeout(function() {
+            $('.send-reply-btn').prop('disabled', false);
+            $('.send-reply-btn .spinner-border').hide();
+        }, 5000);
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Explicitly initialize tabs to ensure they work
+        $('#userPanelTabs a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+        
+        // Force show the payment tab if there's a query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('show_payments')) {
+            $('#payments-tab').tab('show');
+        }
+        
+        // Debug function to check if payment section is loaded
+        console.log('Payment tab exists:', $('#payments').length > 0);
+        console.log('Payment tab content:', $('#payments').html().substring(0, 100) + '...');
+    });
+</script>
+{% endblock extrajs %}
+{% endblock %} 

@@ -1,0 +1,965 @@
+ <!-- END nav -->
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    /* Enhanced hero section */
+    .hero-wrap {
+        position: relative;
+        height: 90vh; /* Reduced from 100vh to prevent full overlap */
+        min-height: 550px;
+        background-size: cover;
+        background-position: center center;
+        margin-top: 80px; /* Added margin to ensure space for navbar */
+        padding-top: 30px; /* Add padding to push content down */
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7); /* Darker overlay for better text contrast */
+        background: linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);
+    }
+    
+    .brand-highlight {
+        display: inline-block;
+        color: #fac564; /* Gold color for brand */
+        font-weight: 800;
+        text-shadow: 0 0 10px rgba(250, 197, 100, 0.5); /* Glow effect */
+    }
+    
+    .hero-text {
+        padding: 3rem 2.5rem;
+        background-color: rgba(0, 0, 0, 0.4); /* Darker for better contrast */
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .hero-text h1 {
+        font-size: 3.5rem;
+        font-weight: 800; /* Bolder for better visibility */
+        color: #fff;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Enhanced shadow for better readability */
+        letter-spacing: 0.5px;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-text p {
+        color: #f8f9fa;
+        font-size: 1.3rem;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        font-weight: 400;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    /* Improved search bar */
+    .search-container {
+        margin: 2.5rem auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1.75rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        border: 1px solid rgba(250, 197, 100, 0.3);
+    }
+    
+    .search-form {
+        position: relative;
+    }
+    
+    .search-title {
+        color: #333;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+    
+    .search-form-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .search-input-wrap {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+    }
+    
+    .search-form input {
+        height: 55px;
+        border-radius: 30px;
+        padding-left: 55px;
+        font-size: 1.15rem;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        color: #333;
+        width: 100%;
+        background-color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form input:focus {
+        border-color: #fac564;
+        box-shadow: 0 0 0 3px rgba(250, 197, 100, 0.25);
+        outline: none;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #fac564;
+        font-size: 1.25rem;
+    }
+    
+    .search-form button {
+        height: 55px;
+        border-radius: 30px;
+        background: #fac564;
+        border: none;
+        color: #fff;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        padding: 0 30px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(250, 197, 100, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .search-form button:hover {
+        background: #e6ae47;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(250, 197, 100, 0.4);
+    }
+    
+    .search-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .search-tag {
+        background: rgba(250, 197, 100, 0.15);
+        color: #333;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .search-tag:hover {
+        background: rgba(250, 197, 100, 0.3);
+    }
+    
+    /* Feature cards */
+    .feature-card {
+        background: #fff;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s;
+        height: 100%;
+        margin-bottom: 30px;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+    
+    .feature-icon {
+        background: #f8f9fa;
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .feature-icon img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+    }
+    
+    .feature-text {
+        padding: 25px;
+    }
+    
+    .feature-text h3 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #222; /* Darker for better contrast */
+    }
+    
+    .feature-text p {
+        font-size: 1.05rem;
+        color: #555; /* Improved contrast from typical #777 */
+        line-height: 1.6;
+    }
+    
+    /* Section headers */
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 1rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 2rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+    
+    .text-highlight {
+        color: #fac564;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Property listings */
+    .property-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        background: #fff;
+        transition: all 0.3s;
+    }
+    
+    .property-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+    
+    .property-img {
+        height: 250px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    
+    .property-tag {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: #fac564;
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .property-content {
+        padding: 25px;
+    }
+    
+    .property-price {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .property-price .old {
+        text-decoration: line-through;
+        color: #999; /* Slightly darker than #aaa for better visibility */
+        margin-right: 10px;
+        font-size: 1.05rem;
+    }
+    
+    .property-price .current {
+        font-size: 1.6rem;
+        color: #222; /* Darker than #333 for better readability */
+        font-weight: 700;
+    }
+    
+    .property-features {
+        display: flex;
+        margin-bottom: 15px;
+    }
+    
+    .property-features li {
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        color: #444;
+    }
+    
+    .property-features li i {
+        margin-right: 5px;
+        color: #fac564;
+        font-size: 1.1rem;
+    }
+    
+    .property-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #222;
+        line-height: 1.3;
+    }
+    
+    .property-location {
+        display: flex;
+        align-items: center;
+        color: #555; /* Darker than #777 for better contrast */
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
+    
+    .property-location i {
+        margin-right: 5px;
+        color: #fac564;
+    }
+    
+    .property-btn {
+        display: inline-block;
+        background: #fac564;
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(250, 197, 100, 0.3);
+    }
+    
+    .property-btn:hover {
+        background: #e6ae47;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(250, 197, 100, 0.4);
+    }
+    
+    /* Testimonials */
+    .testimonial-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .testimonial-card::before {
+        content: '\201C';
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        font-size: 5rem;
+        color: #f0f0f0;
+        line-height: 1;
+    }
+    
+    .testimonial-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .testimonial-content p {
+        color: #444; /* Darker than standard paragraph color */
+        font-size: 1.05rem;
+        line-height: 1.6;
+        font-style: italic;
+    }
+    
+    .testimonial-user {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
+    .testimonial-user-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .testimonial-user-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .testimonial-user-info h4 {
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #222;
+    }
+    
+    .testimonial-user-info p {
+        color: #555; /* Darker than #777 for better contrast */
+        font-size: 0.95rem;
+        font-style: normal;
+    }
+    
+    /* Stats section */
+    .stats-section {
+        background: #f8f9fa;
+        padding: 80px 0;
+    }
+    
+    .stats-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 35px 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        height: 100%;
+        transition: all 0.3s;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stats-icon {
+        font-size: 3.2rem;
+        color: #fac564;
+        margin-bottom: 20px;
+    }
+    
+    .stats-number {
+        font-size: 3.2rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: #222;
+        line-height: 1.1;
+    }
+    
+    .stats-label {
+        color: #555;
+        font-size: 1.15rem;
+        font-weight: 500;
+    }
+    
+    /* CTA section */
+    .cta-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('/static/images/bj.jpg');
+        background-size: cover;
+        background-position: center;
+        padding: 100px 0;
+        color: #fff;
+        text-align: center;
+    }
+    
+    .cta-content h2 {
+        font-size: 3.2rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    }
+    
+    .cta-content p {
+        font-size: 1.3rem;
+        margin-bottom: 35px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+    
+    .cta-btn {
+        display: inline-block;
+        background: #fac564;
+        color: #fff;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.15rem;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        letter-spacing: 0.5px;
+    }
+    
+    .cta-btn:hover {
+        background: #e6ae47;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Button styling */
+    .btn-primary-custom {
+        background-color: #fac564;
+        color: white;
+        border-radius: 30px;
+        padding: 15px 35px;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 4px 12px rgba(250, 197, 100, 0.3);
+        transition: all 0.3s;
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary-custom:hover {
+        background-color: #e6ae47;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(250, 197, 100, 0.4);
+    }
+    
+    .btn-outline-custom {
+        border: 2px solid #fff;
+        color: #fff;
+        border-radius: 30px;
+        padding: 13px 33px;
+        font-weight: 600;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+        font-size: 1.1rem;
+    }
+    
+    .btn-outline-custom:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .hero-wrap {
+            margin-top: 60px; /* Smaller margin on mobile */
+            height: auto;
+            min-height: 500px;
+        }
+        
+        .hero-text h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-text p {
+            font-size: 1.1rem;
+        }
+        
+        .search-form-group {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .search-form input {
+            height: 50px;
+            font-size: 1rem;
+        }
+        
+        .search-form button {
+            width: 100%;
+            height: 50px;
+        }
+        
+        .property-img {
+            height: 200px;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .cta-content h2 {
+            font-size: 2.5rem;
+        }
+        
+        .cta-content p {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="hero-wrap" style="background-image: url('{% static 'images/bj.jpg' %}'); margin-top: 80px; padding-top: 30px;">
+    <div class="hero-overlay" style="background: linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);"></div>
+    <div class="container h-100">
+        <div class="row h-100 align-items-center justify-content-center">
+            <div class="col-md-10 text-center">
+                <div class="hero-text" style="padding: 3rem 2.5rem; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h1 class="mb-4" style="font-size: 3.5rem; font-weight: 800; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);">Find Your Perfect Home with <span style="color: #fac564; font-weight: 800; text-shadow: 0 0 10px rgba(250, 197, 100, 0.5);">Druk Rental</span></h1>
+                    <p class="mb-4" style="font-size: 1.3rem; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);">
+                        <span style="color: #fac564; font-weight: 700;">Druk Rental</span> makes it easy to find your dream property without any middlemen or brokerage fees.
+                    </p>
+                    
+                    <div style="margin: 2rem auto; background: rgba(255, 255, 255, 0.95); padding: 1.75rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); max-width: 800px; border: 1px solid rgba(250, 197, 100, 0.3); position: relative; z-index: 10;">
+                        <h4 style="color: #333; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: left;">What are you looking for?</h4>
+                        <form action="/rent-house/" method="POST" class="search-form">
+					{% csrf_token %}
+                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 15px;">
+                                <div style="flex: 1; min-width: 200px; position: relative;">
+                                    <i class="fa fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #fac564; font-size: 1.25rem;"></i>
+                                    <input type="text" name="search" class="form-control" placeholder="Search by city, area, or property type..." required style="height: 55px; border-radius: 30px; padding-left: 55px; font-size: 1.15rem; border: 1px solid #ddd; width: 100%;" />
+				              </div>
+                                <button type="submit" aria-label="Search properties" style="height: 55px; border-radius: 30px; background: #fac564; border: none; color: #fff; font-size: 1.1rem; transition: all 0.3s; padding: 0 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(250, 197, 100, 0.3); display: flex; align-items: center; gap: 10px;">
+                                    <i class="fa fa-search mr-2"></i> Find Properties
+                                </button>
+			              </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                                <span onclick="document.querySelector('input[name=search]').value='Thimphu'" style="background: rgba(250, 197, 100, 0.15); color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Thimphu</span>
+                                <span onclick="document.querySelector('input[name=search]').value='Paro'" style="background: rgba(250, 197, 100, 0.15); color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Paro</span>
+                                <span onclick="document.querySelector('input[name=search]').value='Apartment'" style="background: rgba(250, 197, 100, 0.15); color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Apartment</span>
+                                <span onclick="document.querySelector('input[name=search]').value='Villa'" style="background: rgba(250, 197, 100, 0.15); color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Villa</span>
+		        		</div>
+		        	</form>
+            </div>
+                    
+                    <div class="mt-4">
+                        <a href="/sign" class="btn btn-lg btn-primary-custom mr-3" style="background-color: #fac564; color: white; border-radius: 30px; padding: 12px 30px; font-weight: 600; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(250, 197, 100, 0.3);">
+                            <i class="fa fa-user-plus mr-2"></i> Join Now
+                        </a>
+                        <a href="/rent-house/" class="btn btn-lg btn-outline-custom" style="border: 2px solid #fff; color: #fff; border-radius: 30px; padding: 12px 30px; font-weight: 600; background-color: rgba(255, 255, 255, 0.1); font-size: 1.1rem;">
+                            <i class="fa fa-home mr-2"></i> Browse Properties
+                        </a>
+          </div>
+        </div>
+      </div>
+        </div>
+			</div>
+    </div>
+
+<!-- Features Section -->
+<section class="py-5">
+      <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <h2 class="section-title">Why Choose <span style="color: #fac564; font-weight: 800;">Druk Rental</span>?</h2>
+                <p class="section-subtitle">We provide a seamless house rental experience without any middlemen, saving you time and money.</p>
+          </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <img src="{% static 'images/employee.png' %}" alt="Avoid Brokers">
+                    </div>
+                    <div class="feature-text">
+                        <h3>No Brokers</h3>
+                        <p>Connect directly with property owners and avoid paying any brokerage fees.</p>
+              </div>
+            </div>      
+          </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <img src="{% static 'images/calendar.png' %}" alt="Free Listing">
+                    </div>
+                    <div class="feature-text">
+                <h3>Free Listing</h3>
+                        <p>List your property for free and get connected with genuine tenants.</p>
+              </div>
+            </div>      
+          </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <img src="{% static 'images/home.png' %}" alt="Verified Properties">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Verified Listings</h3>
+                        <p>All properties are verified to ensure you make informed decisions.</p>
+              </div>
+            </div>      
+          </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <img src="{% static 'images/contract.png' %}" alt="Documentation">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Legal Assistance</h3>
+                        <p>Get help with rental agreements and all necessary documentation.</p>
+              </div>
+            </div>      
+          </div>
+        </div>
+      </div>
+    </section>
+
+<!-- Featured Properties Section -->
+<section class="py-5 bg-light">
+    	<div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <span class="text-highlight">EXCLUSIVE PROPERTIES</span>
+                <h2 class="section-title">Featured Listings</h2>
+                <p class="section-subtitle">Explore our handpicked selection of premium properties available for rent.</p>
+          </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="property-card">
+                    <div class="property-img" style="background-image: url('{% static 'images/work-1.jpg' %}');">
+                        <span class="property-tag">Featured</span>
+                    </div>
+                    <div class="property-content">
+                        <div class="property-price">
+                            <span class="old">₹20,000</span>
+                            <span class="current">₹15,000<small>/mo</small></span>
+                        </div>
+                        <ul class="property-features list-unstyled">
+                            <li><i class="fa fa-bed"></i> 3 Beds</li>
+                            <li><i class="fa fa-bath"></i> 2 Baths</li>
+                            <li><i class="fa fa-th-large"></i> 1,878 sqft</li>
+        				</ul>
+                        <h3 class="property-title">Modern Sky Villa</h3>
+                        <div class="property-location"><i class="fa fa-map-marker-alt"></i> Thimphu, Bhutan</div>
+                        <a href="/rent-house/" class="property-btn">View Details</a>
+        			</div>
+        		</div>
+        	</div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="property-card">
+                    <div class="property-img" style="background-image: url('{% static 'images/work-2.jpg' %}');">
+                        <span class="property-tag">Special Offer</span>
+                    </div>
+                    <div class="property-content">
+                        <div class="property-price">
+                            <span class="old">₹30,000</span>
+                            <span class="current">₹20,000<small>/mo</small></span>
+                        </div>
+                        <ul class="property-features list-unstyled">
+                            <li><i class="fa fa-bed"></i> 3 Beds</li>
+                            <li><i class="fa fa-bath"></i> 2 Baths</li>
+                            <li><i class="fa fa-th-large"></i> 2,225 sqft</li>
+        				</ul>
+                        <h3 class="property-title">Luxury Apartment</h3>
+                        <div class="property-location"><i class="fa fa-map-marker-alt"></i> Paro, Bhutan</div>
+                        <a href="/rent-house/" class="property-btn">View Details</a>
+        			</div>
+        		</div>
+        	</div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="property-card">
+                    <div class="property-img" style="background-image: url('{% static 'images/work-3.jpg' %}');">
+                        <span class="property-tag">New</span>
+                    </div>
+                    <div class="property-content">
+                        <div class="property-price">
+                            <span class="old">₹35,000</span>
+                            <span class="current">₹25,000<small>/mo</small></span>
+                        </div>
+                        <ul class="property-features list-unstyled">
+                            <li><i class="fa fa-bed"></i> 4 Beds</li>
+                            <li><i class="fa fa-bath"></i> 3 Baths</li>
+                            <li><i class="fa fa-th-large"></i> 2,878 sqft</li>
+        				</ul>
+                        <h3 class="property-title">Mountain View House</h3>
+                        <div class="property-location"><i class="fa fa-map-marker-alt"></i> Punakha, Bhutan</div>
+                        <a href="/rent-house/" class="property-btn">View Details</a>
+        			</div>
+        		</div>
+        	</div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/rent-house/" class="btn btn-lg" style="background-color: #fac564; color: white; border-radius: 30px; padding: 12px 30px;">
+                <i class="fa fa-list mr-2"></i> View All Properties
+            </a>
+        </div>
+    	</div>
+    </section>
+
+<!-- Stats Section -->
+<section class="py-5">
+    	<div class="container">
+    		<div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <div class="stats-number" data-count="305">0</div>
+                    <div class="stats-label">Happy Clients</div>
+              </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fa fa-home"></i>
+          </div>
+                    <div class="stats-number" data-count="1090">0</div>
+                    <div class="stats-label">Total Properties</div>
+              </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fa fa-check-circle"></i>
+          </div>
+                    <div class="stats-number" data-count="209">0</div>
+                    <div class="stats-label">Successful Rentals</div>
+              </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fa fa-building"></i>
+          </div>
+                    <div class="stats-number" data-count="67">0</div>
+                    <div class="stats-label">Cities Covered</div>
+            </div>
+          </div>
+        </div>
+    	</div>
+    </section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+      <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <span class="text-highlight">TESTIMONIALS</span>
+                <h2 class="section-title">What Our Clients Say</h2>
+                <p class="section-subtitle">Don't just take our word for it - hear from some of our satisfied clients.</p>
+          </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>I found my dream apartment without paying any brokerage. The process was smooth and the team was very helpful throughout.</p>
+                        <div class="testimonial-user">
+                            <div class="testimonial-user-img">
+                                <img src="{% static 'images/person_1.jpg' %}" alt="User">
+		                  </div>
+                            <div class="testimonial-user-info">
+                                <h4>John Cena</h4>
+                                <p>Tenant</p>
+		                  </div>
+	                  </div>
+                  </div>
+                </div>
+              </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>As a property owner, I was able to find reliable tenants quickly without any hassle. The verification process is excellent.</p>
+                        <div class="testimonial-user">
+                            <div class="testimonial-user-img">
+                                <img src="{% static 'images/person_2.jpg' %}" alt="User">
+		                  </div>
+                            <div class="testimonial-user-info">
+                                <h4>The Rock</h4>
+                                <p>Property Owner</p>
+		                  </div>
+	                  </div>
+                  </div>
+                </div>
+              </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>The detailed property listings with photos helped me narrow down my choices before even visiting. Saved me so much time!</p>
+                        <div class="testimonial-user">
+                            <div class="testimonial-user-img">
+                                <img src="{% static 'images/person_3.jpg' %}" alt="User">
+		                  </div>
+                            <div class="testimonial-user-info">
+                                <h4>Karma </h4>
+                                <p>Tenant</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    	<div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="cta-content">
+                    <h2>Ready to Find Your Next Home?</h2>
+                    <p>Join thousands of satisfied users who found their perfect rental property with zero brokerage. List your property or start searching today!</p>
+                    <div>
+                        <a href="/sign" class="cta-btn mr-3">
+                            <i class="fa fa-user-plus mr-2"></i> Sign Up Now
+                        </a>
+                        <a href="/rent-house/" class="cta-btn" style="background-color: transparent; border: 2px solid #fac564;">
+                            <i class="fa fa-search mr-2"></i> Browse Properties
+                        </a>
+	    				</div>
+    				</div>
+        	</div>
+        </div>
+    	</div>
+    </section>
+
+<!-- JavaScript for animated counting -->
+<script>
+    // Animate counter numbers
+    document.addEventListener('DOMContentLoaded', function() {
+        const counters = document.querySelectorAll('.stats-number');
+        const speed = 200;
+        
+        counters.forEach(counter => {
+            const animate = () => {
+                const value = +counter.getAttribute('data-count');
+                const data = +counter.innerText;
+                const time = value / speed;
+                
+                if (data < value) {
+                    counter.innerText = Math.ceil(data + time);
+                    setTimeout(animate, 1);
+                } else {
+                    counter.innerText = value;
+                }
+            }
+            animate();
+        });
+    });
+</script>
+
+{% endblock %}
+
+    

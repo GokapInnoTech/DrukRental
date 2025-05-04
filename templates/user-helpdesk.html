@@ -1,0 +1,40 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+            <div class="container mt-5">
+                {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+{% else %}
+    <form method="POST" action="/helpdesk/">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="message">Your Message:</label>
+            <textarea name="message" required class="form-control" rows="10"></textarea>
+            <button type="submit" class="btn btn-info" style="margin-left: 500px; border-radius: 20px;">Submit</button>
+        </div>
+       
+    </form>
+{% endif %}
+            </div>
+        </div>
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+  {% endblock %}

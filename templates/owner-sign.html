@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+
+<head>
+    <link rel="stylesheet" href="{% static 'css/ab.css' %}">
+    <title>signup</title>
+</head>
+
+<body>
+
+    <body>
+        <div class="login-page">
+            <div class="form">
+                <div class="login">
+                    <div class="login-header">
+                        <h3><a href="/">Home</a></h3>
+                        <h3>House Owner Registration</h3>
+                        <p>Please enter your credentials to register as a House Owner.</p>
+                        <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                            <p style="margin-bottom: 5px;">Register as:</p>
+                            <a href="/sign/" style="background-color: #ccc; color: white; padding: 5px 10px; border-radius: 3px; text-decoration: none; display: inline-block; margin: 2px;">User</a>
+                            <a href="/owner-sign/" style="background-color: #fac564; color: white; padding: 5px 10px; border-radius: 3px; text-decoration: none; display: inline-block; margin: 2px;">House Owner</a>
+                            <a href="/admin-sign/" style="background-color: #ccc; color: white; padding: 5px 10px; border-radius: 3px; text-decoration: none; display: inline-block; margin: 2px;">Admin</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row register-form">
+                    <form action="/owner-sign/" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% if msg %}
+                        <center style="color: red;">{{msg}}</center>
+                        {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="First Name *" value=""
+                                    name="first_name" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Last Name *" value=""
+                                    name="last_name" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="email" class="form-control" placeholder="Email *" value="" name="email"
+                                    required />
+                            </div>
+                            <div class="form-group">
+                                <input type="number" min="10" minlength="10" maxlength="10" name="contact"
+                                    class="form-control" placeholder="Your Phone " value="" required />
+                            </div>
+
+
+                            <div class="form-control">
+                                
+                                <select required name="gender" aria-label="Gender" title="Gender" style="float:right; width: 270px; height: 40px; " class="form-control">
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </select>
+
+
+
+                            </div>
+                            <br><br>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="Date" class="form-control" placeholder="DOB*" value="" name="dob"
+                                        required />
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Address*" value="" name="address"
+                                        required />
+                                </div>
+
+
+
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="User Name*" value=""
+                                    name="username" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="password" minlength="4" maxlength="10" class="form-control"
+                                    placeholder="Password*" value="" name="pass1" required />
+                            </div>
+
+
+                            <div class="form-group">
+                                <input type="password" class="form-control" placeholder="Confirm Password*" value=""
+                                    name="pass2" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="file" name="pic" class="form-control" placeholder="upload your photo"
+                                    value="" required />
+                            </div>
+
+                            <input type="submit" style="background-color: blue;" value="Register" class="btn btn-dark">
+                            <!--  <input type="submit" class="btnRegister"  value="Register"/> -->
+                        </div>
+                </div>
+                <p class="message"> Already have an Account??<a href="/login/">Login here..</a></p>
+            </div>
+
+
+
+        </div>
+        </div>
+        </div>
+        </div>
+        </form>
+    </body>
+</body>
+
+</html>

@@ -1,0 +1,291 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                {% if user_type == 'tenant' %}
+                <li class="breadcrumb-item"><a href="/user-panel/">User Panel</a></li>
+                {% elif user_type == 'owner' %}
+                <li class="breadcrumb-item"><a href="/owner-panel/">Owner Panel</a></li>
+                {% else %}
+                <li class="breadcrumb-item"><a href="/admin-panel/">Admin Panel</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">Payment History</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <!-- Payment Statistics -->
+        <div class="row">
+            {% if user_type == 'tenant' %}
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-1">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <h3>₹{{ total_paid|floatformat:2 }}</h3>
+                        <p>Total Paid</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>{{ payments.count }}</h3>
+                        <p>Total Payments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>{{ payments.first.payment_month|default:"N/A" }}</h3>
+                        <p>Last Payment</p>
+                    </div>
+                </div>
+            </div>
+            {% elif user_type == 'owner' %}
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-1">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <h3>₹{{ total_received|floatformat:2 }}</h3>
+                        <p>Total Received</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h3>₹{{ total_platform_fee|floatformat:2 }}</h3>
+                        <p>Platform Fees</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>{{ payments.count }}</h3>
+                        <p>Total Payments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>{{ payments.first.payment_month|default:"N/A" }}</h3>
+                        <p>Last Payment</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-1">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <h3>₹{{ total_processed|floatformat:2 }}</h3>
+                        <p>Total Processed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-2">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h3>₹{{ total_platform_fee|floatformat:2 }}</h3>
+                        <p>Platform Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>{{ payments.count }}</h3>
+                        <p>Total Transactions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card gradient-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>{{ unique_tenant_count }}</h3>
+                        <p>Unique Tenants</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Payment History Card -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Payment History</h4>
+                <div class="card-tools">
+                    <form class="form-inline" method="GET">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search payments..." value="{{ request.GET.search }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit" title="Search payments"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Month</th>
+                                {% if user_type == 'owner' or user_type == 'admin' %}
+                                <th>Tenant</th>
+                                {% endif %}
+                                {% if user_type == 'tenant' or user_type == 'admin' %}
+                                <th>Owner</th>
+                                {% endif %}
+                                <th>Property</th>
+                                <th>Amount</th>
+                                {% if user_type == 'owner' %}
+                                <th>Your Earnings</th>
+                                <th>Platform Fee</th>
+                                {% endif %}
+                                <th>Status</th>
+                                <th>Transaction ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                                <td>{{ payment.payment_month }}</td>
+                                {% if user_type == 'owner' or user_type == 'admin' %}
+                                <td>{{ payment.tenant.user.first_name }} {{ payment.tenant.user.last_name }}</td>
+                                {% endif %}
+                                {% if user_type == 'tenant' or user_type == 'admin' %}
+                                <td>{{ payment.owner.user.first_name }} {{ payment.owner.user.last_name }}</td>
+                                {% endif %}
+                                <td>
+                                    <a href="{% url 'view-house' payment.booking.house.id %}" class="text-primary">
+                                        {{ payment.booking.house.house_no }}, {{ payment.booking.house.area }}
+                                    </a>
+                                </td>
+                                <td>₹{{ payment.amount }}</td>
+                                {% if user_type == 'owner' %}
+                                <td>₹{{ payment.amount_to_owner }}</td>
+                                <td>₹{{ payment.platform_fee }}</td>
+                                {% endif %}
+                                <td>
+                                    {% if payment.status == 'Completed' %}
+                                    <span class="badge badge-success">{{ payment.status }}</span>
+                                    {% elif payment.status == 'Pending' %}
+                                    <span class="badge badge-warning">{{ payment.status }}</span>
+                                    {% elif payment.status == 'Failed' %}
+                                    <span class="badge badge-danger">{{ payment.status }}</span>
+                                    {% else %}
+                                    <span class="badge badge-info">{{ payment.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payment.transaction_id %}
+                                    <small class="text-muted">{{ payment.transaction_id }}</small>
+                                    {% else %}
+                                    <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'payment-success' payment.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% if payment.status == 'Pending' and user_type == 'tenant' %}
+                                        <a href="{% url 'process-payment' payment.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-credit-card"></i> Pay
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    No payment records found.
+                    {% if user_type == 'tenant' %}
+                    <p class="mt-2 mb-0">
+                        Once you make rent payments, your payment history will appear here.
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Download Button -->
+        <div class="text-center my-4">
+            <button class="btn btn-primary">
+                <i class="fas fa-download mr-2"></i> Download Payment History
+            </button>
+        </div>
+        
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="card-title">Need assistance with payments?</h5>
+                        <p class="card-text">
+                            If you have any questions about your payments or need help with a transaction,
+                            our support team is here to help you.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <a href="/contact/" class="btn btn-outline-primary">
+                            <i class="fas fa-headset mr-2"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

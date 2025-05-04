@@ -1,0 +1,951 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* Dashboard styling */
+    .content-body {
+        background-color: #f8f9fa;
+    }
+    
+    .admin-dashboard .card {
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        border: none;
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-dashboard .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-dashboard .card-header {
+        background: linear-gradient(to right, #7571f9, #9097fb);
+        color: white;
+        border: none;
+        border-top-left-radius: 8px !important;
+        border-top-right-radius: 8px !important;
+        padding: 15px 20px;
+        font-weight: 600;
+    }
+    
+    .admin-dashboard .stat-card {
+        border-radius: 8px;
+        height: 100%;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .admin-dashboard .stat-card .stat-icon {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 40px;
+        opacity: 0.2;
+    }
+    
+    .admin-dashboard .stat-card h3 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .admin-dashboard .stat-card p {
+        margin-top: 5px;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .admin-dashboard .gradient-1 {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+    }
+    
+    .admin-dashboard .gradient-2 {
+        background: linear-gradient(to right, #f83600, #f9d423);
+    }
+    
+    .admin-dashboard .gradient-3 {
+        background: linear-gradient(to right, #0ba360, #3cba92);
+    }
+    
+    .admin-dashboard .gradient-4 {
+        background: linear-gradient(to right, #f6d365, #fda085);
+    }
+    
+    .admin-dashboard .gradient-5 {
+        background: linear-gradient(to right, #ff512f, #f09819);
+    }
+    
+    .admin-dashboard .gradient-6 {
+        background: linear-gradient(to right, #4e54c8, #8f94fb);
+    }
+    
+    .admin-dashboard .gradient-7 {
+        background: linear-gradient(to right, #11998e, #38ef7d);
+    }
+    
+    .admin-dashboard .gradient-8 {
+        background: linear-gradient(to right, #fc5c7d, #6a82fb);
+    }
+    
+    .admin-dashboard .table-responsive {
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+    
+    .admin-dashboard .table {
+        margin-bottom: 0;
+    }
+    
+    .admin-dashboard .table th {
+        font-weight: 600;
+        border-top: none;
+    }
+    
+    .admin-dashboard .table td, .admin-dashboard .table th {
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+    
+    .admin-dashboard .table tr:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    /* Action buttons */
+    .admin-dashboard .btn {
+        border-radius: 4px;
+        padding: 8px 15px;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.15s ease;
+    }
+    
+    .admin-dashboard .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+    
+    .admin-dashboard .btn-group .btn {
+        margin-right: 5px;
+    }
+    
+    /* Progress bars */
+    .admin-dashboard .progress {
+        height: 8px;
+        border-radius: 10px;
+        background-color: rgba(0,0,0,0.05);
+        margin-top: 10px;
+    }
+    
+    .admin-dashboard .progress-bar {
+        border-radius: 10px;
+    }
+    
+    /* Badge styling */
+    .admin-dashboard .badge {
+        padding: 5px 10px;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .admin-dashboard .btn-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-dashboard .btn-group .btn {
+            margin-bottom: 5px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .admin-dashboard .card-flex {
+            flex-direction: column;
+        }
+        
+        .admin-dashboard .stat-card h3 {
+            font-size: 1.8rem;
+        }
+    }
+    
+    /* For the charts */
+    .admin-dashboard .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+    
+    /* Activity list */
+    .admin-dashboard .activity-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .admin-dashboard .activity-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .admin-dashboard .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .admin-dashboard .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .admin-dashboard .activity-content {
+        flex-grow: 1;
+    }
+    
+    .admin-dashboard .activity-content h6 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .admin-dashboard .activity-content p {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+    
+    .admin-dashboard .activity-time {
+        font-size: 0.75rem;
+        color: #adb5bd;
+    }
+    
+    /* Quick action buttons */
+    .admin-dashboard .quick-action {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-dashboard .quick-action:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-dashboard .quick-action-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+    }
+    
+    .admin-dashboard .quick-action-content {
+        flex-grow: 1;
+    }
+    
+    .admin-dashboard .quick-action-content h5 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .admin-dashboard .quick-action-content p {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+</style>
+
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body admin-dashboard">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col-sm-6 p-md-0">
+            <div class="welcome-text">
+                <h4>Welcome to Admin Dashboard</h4>
+                <span>The central hub for managing the rental system</span>
+            </div>
+        </div>
+        <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Admin</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0)">Dashboard</a></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Top Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+                <a href="/all-user/" style="text-decoration: none;">
+                    <div class="quick-action">
+                        <div class="quick-action-icon gradient-1">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h5>Manage Users</h5>
+                            <p>View and edit all system users</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+                <a href="/approve-owner/" style="text-decoration: none;">
+                    <div class="quick-action">
+                        <div class="quick-action-icon gradient-2">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h5>Verify Owners</h5>
+                            <p>{{ pending_owner_verifications }} pending verifications</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+                <a href="/help-desk/" style="text-decoration: none;">
+                    <div class="quick-action">
+                        <div class="quick-action-icon gradient-3">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h5>Help Desk</h5>
+                            <p>{{ total_helpdesk }} total tickets</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+                <a href="/payment-history/" style="text-decoration: none;">
+                    <div class="quick-action">
+                        <div class="quick-action-icon gradient-6">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="quick-action-content">
+                            <h5>Payment History</h5>
+                            <p>{{ total_payments }} total payments</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- User & Payments Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">User & Payments</h4>
+                        <p class="mb-0">Track user details and monitor payments effortlessly. With features for managing user information and recording payments, this aspect of the system simplifies financial transactions and enhances transparency.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- User Stats Card -->
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">User Management</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card gradient-1">
+                                                    <div class="stat-card">
+                                                        <div class="stat-icon">
+                                                            <i class="fas fa-users"></i>
+                                                        </div>
+                                                        <h3>{{ user_count }}</h3>
+                                                        <p>Total Users</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card gradient-2">
+                                                    <div class="stat-card">
+                                                        <div class="stat-icon">
+                                                            <i class="fas fa-home"></i>
+                                                        </div>
+                                                        <h3>{{ owner_count }}</h3>
+                                                        <p>Property Owners</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 text-center">
+                                            <a href="/all-user/" class="btn btn-primary">
+                                                <i class="fas fa-user-cog mr-1"></i> Manage Users
+                                            </a>
+                                            <a href="/approve-owner/" class="btn btn-warning">
+                                                <i class="fas fa-check-circle mr-1"></i> Verify Owners
+                                            </a>
+                                        </div>
+                                        <!-- Recent Users -->
+                                        <h6 class="mb-3">Recent Users</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>User</th>
+                                                        <th>Type</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for user in recent_users|slice:":5" %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="mr-2">
+                                                                    {% if user.profilePicture %}
+                                                                    <img src="{{ user.profilePicture.url }}" alt="Profile" class="rounded-circle" width="30">
+                                                                    {% else %}
+                                                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                                                        <i class="fas fa-user text-muted"></i>
+                                                                    </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                                <div>
+                                                                    <span class="font-weight-bold">{{ user.user.first_name }} {{ user.user.last_name }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge {% if user.userType == 'Owner' %}badge-warning{% elif user.userType == 'Admin' %}badge-danger{% else %}badge-info{% endif %}">
+                                                                {{ user.userType }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge {% if user.verified %}badge-success{% else %}badge-secondary{% endif %}">
+                                                                {% if user.verified %}Verified{% else %}Unverified{% endif %}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Stats Card -->
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Payment Tracking</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card gradient-3">
+                                                    <div class="stat-card">
+                                                        <div class="stat-icon">
+                                                            <i class="fas fa-dollar-sign"></i>
+                                                        </div>
+                                                        <h3>₹{{ platform_earnings|floatformat:0 }}</h3>
+                                                        <p>Platform Revenue</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card gradient-4">
+                                                    <div class="stat-card">
+                                                        <div class="stat-icon">
+                                                            <i class="fas fa-receipt"></i>
+                                                        </div>
+                                                        <h3>{{ total_payments }}</h3>
+                                                        <p>Total Transactions</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 text-center">
+                                            <a href="/payment-history/" class="btn btn-success">
+                                                <i class="fas fa-history mr-1"></i> Payment History
+                                            </a>
+                                        </div>
+                                        <!-- Recent Payments -->
+                                        <h6 class="mb-3">Recent Payments</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Property</th>
+                                                        <th>Amount</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for payment in recent_payments|slice:":5" %}
+                                                    <tr>
+                                                        <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                                                        <td>{{ payment.booking.house.house_no }}</td>
+                                                        <td>₹{{ payment.amount }}</td>
+                                                        <td>
+                                                            <span class="badge {% if payment.status == 'Completed' %}badge-success{% elif payment.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
+                                                                {{ payment.status }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Stats Cards Row -->
+        <div class="row">
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card">
+                    <div class="stat-card gradient-1">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>{{ user_count }}</h3>
+                        <p>Total Users</p>
+                        <div class="d-flex justify-content-between">
+                            <small>{{ owner_count }} Owners</small>
+                            <small>{{ public_user_count }} Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card">
+                    <div class="stat-card gradient-2">
+                        <div class="stat-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3>{{ property_count }}</h3>
+                        <p>Total Properties</p>
+                        <div class="d-flex justify-content-between">
+                            <small>{{ available_properties }} Available</small>
+                            <small>{{ rented_properties }} Rented</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card">
+                    <div class="stat-card gradient-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <h3>₹{{ total_rent_value }}</h3>
+                        <p>Total Rent Value</p>
+                        <div class="d-flex justify-content-between">
+                            <small>Avg: ₹{{ avg_rent_price.avg_price|floatformat:0|default:"0" }}</small>
+                            <small>{{ rented_properties }} Properties</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <div class="card">
+                    <div class="stat-card gradient-4">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>{{ total_bookings }}</h3>
+                        <p>Total Bookings</p>
+                        <div class="d-flex justify-content-between">
+                            <small>{{ pending_bookings }} Pending</small>
+                            <small>{{ completed_bookings }} Completed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Stats Row -->
+        <div class="row">
+            <div class="col-xl-8 col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Property Management</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-xl-6 col-lg-6 col-md-12">
+                                <h5>Property Statistics</h5>
+                                <div class="mt-4">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div style="width: 40px; height: 40px;" class="bg-success-light rounded mr-3 text-center">
+                                            <i class="fa fa-check text-success" style="line-height: 40px;"></i>
+                                        </div>
+                                        <div>
+                                            <p class="fs-14 mb-0">Available Properties</p>
+                                            <span class="fs-20 text-black font-w600">{{ available_properties }}</span>
+                                        </div>
+                                        <div class="ml-auto text-right">
+                                            <p class="fs-14 mb-0">Percentage</p>
+                                            <span class="fs-20 text-black font-w600">
+                                                {% if property_count > 0 %}
+                                                {{ available_properties|floatformat:0 }}%
+                                                {% else %}
+                                                0%
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div style="width: 40px; height: 40px;" class="bg-danger-light rounded mr-3 text-center">
+                                            <i class="fa fa-times text-danger" style="line-height: 40px;"></i>
+                                        </div>
+                                        <div>
+                                            <p class="fs-14 mb-0">Rented Properties</p>
+                                            <span class="fs-20 text-black font-w600">{{ rented_properties }}</span>
+                                        </div>
+                                        <div class="ml-auto text-right">
+                                            <p class="fs-14 mb-0">Percentage</p>
+                                            <span class="fs-20 text-black font-w600">
+                                                {% if property_count > 0 %}
+                                                {{ rented_properties|floatformat:0 }}%
+                                                {% else %}
+                                                0%
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-xl-6 col-lg-6 col-md-12">
+                                <h5>Properties by City</h5>
+                                <div class="mt-4">
+                                    {% for city in city_stats %}
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <p class="mb-0">{{ city.city }}</p>
+                                        <p class="mb-0">{{ city.count }} Properties</p>
+                                    </div>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-primary" style="width: {{ city.count|floatformat:0 }}%" role="progressbar" aria-valuenow="{{ city.count }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    {% empty %}
+                                    <p>No city data available</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-4 col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Verification Status</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-4">
+                            <div style="width: 40px; height: 40px;" class="bg-warning-light rounded mr-3 text-center">
+                                <i class="fa fa-user-clock text-warning" style="line-height: 40px;"></i>
+                            </div>
+                            <div>
+                                <p class="fs-14 mb-0">Pending Owner Verifications</p>
+                                <span class="fs-20 text-black font-w600">{{ pending_owner_verifications }}</span>
+                            </div>
+                            <div class="ml-auto">
+                                <a href="/approve-owner/" class="btn btn-warning btn-sm">Verify</a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-4">
+                            <div style="width: 40px; height: 40px;" class="bg-info-light rounded mr-3 text-center">
+                                <i class="fa fa-user-shield text-info" style="line-height: 40px;"></i>
+                            </div>
+                            <div>
+                                <p class="fs-14 mb-0">Pending Admin Verifications</p>
+                                <span class="fs-20 text-black font-w600">
+                                    {{ pending_verifications|add:"-"|add:pending_owner_verifications }}
+                                </span>
+                            </div>
+                            <div class="ml-auto">
+                                <a href="/approve-admin/" class="btn btn-info btn-sm">Verify</a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px;" class="bg-success-light rounded mr-3 text-center">
+                                <i class="fa fa-check-double text-success" style="line-height: 40px;"></i>
+                            </div>
+                            <div>
+                                <p class="fs-14 mb-0">Verified Users</p>
+                                <span class="fs-20 text-black font-w600">{{ user_count|add:"-"|add:pending_verifications }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities Section -->
+        <div class="row">
+            <!-- Recent Users -->
+            <div class="col-xl-6 col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <h4 class="card-title">Recent Users</h4>
+                        <a href="/all-user/" class="btn btn-primary btn-sm">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if user.profilePicture %}
+                                                <img src="{{ user.profilePicture.url }}" class="rounded-circle mr-2" width="30" height="30" alt="">
+                                                {% else %}
+                                                <div class="bg-primary-light rounded-circle mr-2 text-center" style="width: 30px; height: 30px;">
+                                                    <i class="fa fa-user text-primary" style="line-height: 30px;"></i>
+                                                </div>
+                                                {% endif %}
+                                                {{ user.user.first_name }} {{ user.user.last_name }}
+                                            </div>
+                                        </td>
+                                        <td>{{ user.userType }}</td>
+                                        <td>
+                                            {% if user.verified %}
+                                            <span class="badge badge-success">Verified</span>
+                                            {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a href="/view-user/{{ user.id }}/" class="btn btn-info btn-sm mr-2">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                                <a href="/edit-profile/{{ user.id }}/" class="btn btn-primary btn-sm">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No users found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Properties -->
+            <div class="col-xl-6 col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <h4 class="card-title">Recent Properties</h4>
+                        <a href="/rent-house/" class="btn btn-primary btn-sm">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for property in recent_properties %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if property.image1 %}
+                                                <img src="{{ property.image1.url }}" class="rounded mr-2" width="30" height="30" alt="" style="object-fit: cover;">
+                                                {% else %}
+                                                <div class="bg-primary-light rounded mr-2 text-center" style="width: 30px; height: 30px;">
+                                                    <i class="fa fa-home text-primary" style="line-height: 30px;"></i>
+                                                </div>
+                                                {% endif %}
+                                                {{ property.house_no }}
+                                            </div>
+                                        </td>
+                                        <td>{{ property.area }}, {{ property.city }}</td>
+                                        <td>
+                                            {% if property.status == "Available" %}
+                                            <span class="badge badge-success">Available</span>
+                                            {% else %}
+                                            <span class="badge badge-danger">Rented</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>₹{{ property.price }}</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a href="/view-house/{{ property.id }}/" class="btn btn-info btn-sm mr-2">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                                <a href="/toggle-house-status/{{ property.id }}/" class="btn btn-primary btn-sm">
+                                                    <i class="fa fa-exchange-alt"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No properties found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Bookings and Help Desk -->
+        <div class="row">
+            <!-- Recent Bookings -->
+            <div class="col-xl-6 col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Recent Booking Requests</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Property</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in recent_bookings %}
+                                    <tr>
+                                        <td>{{ booking.user.user.first_name }}</td>
+                                        <td>{{ booking.house.house_no }}, {{ booking.house.area }}</td>
+                                        <td>
+                                            {% if booking.status == "Pending" %}
+                                            <span class="badge badge-warning">Pending</span>
+                                            {% elif booking.status == "Accepted" %}
+                                            <span class="badge badge-info">Accepted</span>
+                                            {% elif booking.status == "Booked" %}
+                                            <span class="badge badge-success">Booked</span>
+                                            {% else %}
+                                            <span class="badge badge-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="/view-house/{{ booking.house.id }}/" class="btn btn-info btn-sm">
+                                                <i class="fa fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No bookings found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Desk Tickets -->
+            <div class="col-xl-6 col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Help Desk Tickets</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Property</th>
+                                        <th>Message</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for help in recent_helpdesk %}
+                                    <tr>
+                                        <td>{{ help.user.user.first_name }}</td>
+                                        <td>{{ help.house.house_no }}</td>
+                                        <td>{{ help.message|truncatechars:30 }}</td>
+                                        <td>
+                                            <a href="/help-desk/" class="btn btn-info btn-sm">
+                                                <i class="fa fa-reply"></i> Reply
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No help desk tickets found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %} 

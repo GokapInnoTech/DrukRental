@@ -1,0 +1,556 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                <li class="breadcrumb-item active">My Properties</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Stats Row -->
+        <div class="row">
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-1">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Total Properties</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">{{ houses|length }}</h2>
+                            <p class="text-white mb-0">Properties you own</p>
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-home"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-2">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Available</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">{{ available_count|default:"0" }}</h2>
+                            <p class="text-white mb-0">Ready to rent</p>
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-check-circle"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-3">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Rented</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">{{ rented_count|default:"0" }}</h2>
+                            <p class="text-white mb-0">Currently occupied</p>
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-4">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Monthly Revenue</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">${{ monthly_revenue|default:"0" }}</h2>
+                            <p class="text-white mb-0">From rented properties</p>
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-money"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties header with actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body pb-0 d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title mb-1">My Properties</h4>
+                            <p class="text-muted">Manage all your rental properties</p>
+                        </div>
+                        <div>
+                            <a href="/add-house/" class="btn btn-primary px-4">
+                                <i class="fa fa-plus-circle mr-2"></i>Add New Property
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">Filter Properties</h4>
+                        <div class="filter-form">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="status-filter">Status</label>
+                                    <select id="status-filter" class="form-control property-filter" data-filter="status" aria-label="Filter by status">
+                                        <option value="">All Statuses</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Rented">Rented</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="city-filter">City</label>
+                                    <select id="city-filter" class="form-control property-filter" data-filter="city" aria-label="Filter by city">
+                                        <option value="">All Cities</option>
+                                        {% for h in houses %}
+                                            <option value="{{ h.city }}">{{ h.city }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="sort-properties">Sort by</label>
+                                    <select id="sort-properties" class="form-control" aria-label="Sort properties">
+                                        <option value="default">Default</option>
+                                        <option value="price-asc">Price: Low to High</option>
+                                        <option value="price-desc">Price: High to Low</option>
+                                        <option value="newest">Newest First</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="search-properties">Search</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="search-properties" placeholder="Search by house no, area..." aria-label="Search properties">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Grid -->
+        <div class="row" id="properties-container">
+            {% if houses %}
+                {% for h in houses %}
+                <div class="col-lg-4 col-md-6 mb-4 property-card" 
+                     data-status="{{ h.status }}" 
+                     data-city="{{ h.city }}" 
+                     data-price="{{ h.price }}" 
+                     data-id="{{ h.id }}">
+                    <div class="card h-100">
+                        <div class="status-badge status-{{ h.status|lower }}">{{ h.status }}</div>
+                        <div class="property-img">
+                            <div id="carousel-{{ h.id }}" class="carousel slide" data-ride="carousel">
+                                <!-- Indicators -->
+                                <ol class="carousel-indicators">
+                                    <li data-target="#carousel-{{ h.id }}" data-slide-to="0" class="active"></li>
+                                    {% if h.image2 %}
+                                    <li data-target="#carousel-{{ h.id }}" data-slide-to="1"></li>
+                                    {% endif %}
+                                    {% if h.image3 %}
+                                    <li data-target="#carousel-{{ h.id }}" data-slide-to="2"></li>
+                                    {% endif %}
+                                    {% if h.image4 %}
+                                    <li data-target="#carousel-{{ h.id }}" data-slide-to="3"></li>
+                                    {% endif %}
+                                </ol>
+                                
+                                <!-- Slides -->
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active">
+                                        {% if h.image1 %}
+                                            <img src="{{ h.image1.url }}" alt="{{ h.house_no }} - Image 1" class="property-img-slide">
+                                        {% else %}
+                                            <img src="{% static 'AdminStatic/images/default-property.jpg' %}" alt="{{ h.house_no }}" class="property-img-slide">
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if h.image2 %}
+                                    <div class="carousel-item">
+                                        <img src="{{ h.image2.url }}" alt="{{ h.house_no }} - Image 2" class="property-img-slide">
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if h.image3 %}
+                                    <div class="carousel-item">
+                                        <img src="{{ h.image3.url }}" alt="{{ h.house_no }} - Image 3" class="property-img-slide">
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if h.image4 %}
+                                    <div class="carousel-item">
+                                        <img src="{{ h.image4.url }}" alt="{{ h.house_no }} - Image 4" class="property-img-slide">
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Controls -->
+                                <a class="carousel-control-prev" href="#carousel-{{ h.id }}" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="carousel-control-next" href="#carousel-{{ h.id }}" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="property-id mb-0">{{ h.house_no }}</h5>
+                                <span class="property-price">${{ h.price }}</span>
+                            </div>
+                            <div class="property-details">
+                                <p class="mb-2"><i class="fa fa-map-marker text-primary mr-2"></i>{{ h.area }}, {{ h.city }}</p>
+                                <p class="mb-2"><i class="fa fa-th-large text-primary mr-2"></i>{{ h.room_size }}</p>
+                                <p class="mb-0"><i class="fa fa-map-pin text-primary mr-2"></i>{{ h.pincode }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between">
+                                <a href="/view-house/{{ h.id }}/" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-eye mr-1"></i>View Details
+                                </a>
+                                <a href="/edit-house/{{ h.id }}/" class="btn btn-info btn-sm">
+                                    <i class="fa fa-edit mr-1"></i>Edit
+                                </a>
+                                {% if h.status == "Available" %}
+                                <button class="btn btn-success btn-sm toggle-status" data-id="{{ h.id }}" data-status="Available">
+                                    <i class="fa fa-check-circle mr-1"></i>Mark Rented
+                                </button>
+                                {% else %}
+                                <button class="btn btn-warning btn-sm toggle-status" data-id="{{ h.id }}" data-status="Rented">
+                                    <i class="fa fa-times-circle mr-1"></i>Mark Available
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <img src="{% static 'AdminStatic/images/no-data.svg' %}" alt="No properties" style="max-width: 150px; opacity: 0.5;">
+                            <h4 class="mt-4">No Properties Found</h4>
+                            <p class="text-muted">You haven't added any properties yet.</p>
+                            <a href="/add-house/" class="btn btn-primary mt-3">
+                                <i class="fa fa-plus-circle mr-2"></i>Add Your First Property
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- No Results Message (hidden by default) -->
+        <div id="no-results" class="row d-none">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fa fa-search fa-4x text-muted mb-4"></i>
+                        <h4>No properties match your filters</h4>
+                        <p class="text-muted">Try adjusting your search criteria</p>
+                        <button id="reset-filters" class="btn btn-outline-primary mt-3">
+                            <i class="fa fa-refresh mr-2"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom styles for My Houses page */
+    .content-body {
+        padding: 1.875rem;
+    }
+
+    /* Stats cards */
+    .gradient-1 {
+        background: linear-gradient(230deg, #759bff, #843cf6);
+    }
+    .gradient-2 {
+        background: linear-gradient(230deg, #fc5286, #fbaaa2);
+    }
+    .gradient-3 {
+        background: linear-gradient(230deg, #ffc480, #ff763b);
+    }
+    .gradient-4 {
+        background: linear-gradient(230deg, #0e4cfd, #6a8eff);
+    }
+    
+    /* Property cards */
+    .property-card .card {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .property-card .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .property-img {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    /* Carousel styling */
+    .carousel {
+        height: 100%;
+    }
+    
+    .carousel-inner {
+        height: 100%;
+    }
+    
+    .carousel-item {
+        height: 100%;
+    }
+    
+    .property-img-slide {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .carousel-indicators {
+        margin-bottom: 0.5rem;
+    }
+    
+    .carousel-indicators li {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin: 0 3px;
+    }
+    
+    .carousel-control-prev, 
+    .carousel-control-next {
+        width: 10%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .property-card .card:hover .carousel-control-prev,
+    .property-card .card:hover .carousel-control-next {
+        opacity: 0.8;
+    }
+    
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        padding: 10px;
+    }
+    
+    .property-card .card:hover .property-img-slide {
+        transform: scale(1.1);
+    }
+    
+    .status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 5px 15px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.75rem;
+        z-index: 10;
+        text-transform: uppercase;
+    }
+    
+    .status-available {
+        background-color: #2bc155;
+    }
+    
+    .status-rented {
+        background-color: #f72b50;
+    }
+    
+    .property-id {
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .property-price {
+        color: #2bc155;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .property-details p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .property-details i {
+        width: 20px;
+        text-align: center;
+    }
+    
+    .card-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+    }
+    
+    /* Filters */
+    .filter-form {
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .content-body {
+            padding: 0.75rem;
+        }
+        
+        .property-card .card-footer .d-flex {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .property-card .card-footer .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Filter functionality
+        function filterProperties() {
+            let statusFilter = $('.property-filter[data-filter="status"]').val().toLowerCase();
+            let cityFilter = $('.property-filter[data-filter="city"]').val().toLowerCase();
+            let searchTerm = $('#search-properties').val().toLowerCase();
+            
+            let visibleCount = 0;
+            
+            $('.property-card').each(function() {
+                let $this = $(this);
+                let status = $this.data('status').toLowerCase();
+                let city = $this.data('city').toLowerCase();
+                let shouldShow = true;
+                
+                // Check status filter
+                if (statusFilter && status !== statusFilter) {
+                    shouldShow = false;
+                }
+                
+                // Check city filter
+                if (cityFilter && city !== cityFilter) {
+                    shouldShow = false;
+                }
+                
+                // Check search term
+                if (searchTerm) {
+                    let cardText = $this.text().toLowerCase();
+                    if (!cardText.includes(searchTerm)) {
+                        shouldShow = false;
+                    }
+                }
+                
+                if (shouldShow) {
+                    $this.show();
+                    visibleCount++;
+                } else {
+                    $this.hide();
+                }
+            });
+            
+            // Show or hide no results message
+            if (visibleCount === 0) {
+                $('#no-results').removeClass('d-none');
+            } else {
+                $('#no-results').addClass('d-none');
+            }
+        }
+        
+        // Sort functionality
+        function sortProperties(sortBy) {
+            let $container = $('#properties-container');
+            let $items = $('.property-card').detach();
+            
+            if (sortBy === 'price-asc') {
+                $items.sort(function(a, b) {
+                    return $(a).data('price') - $(b).data('price');
+                });
+            } else if (sortBy === 'price-desc') {
+                $items.sort(function(a, b) {
+                    return $(b).data('price') - $(a).data('price');
+                });
+            } else if (sortBy === 'newest') {
+                $items.sort(function(a, b) {
+                    return $(b).data('id') - $(a).data('id');
+                });
+            }
+            
+            $container.append($items);
+        }
+        
+        // Event handlers
+        $('.property-filter').on('change', filterProperties);
+        $('#search-properties').on('keyup', filterProperties);
+        $('#sort-properties').on('change', function() {
+            sortProperties($(this).val());
+        });
+        
+        // Reset filters
+        $('#reset-filters').on('click', function() {
+            $('.property-filter').val('');
+            $('#search-properties').val('');
+            $('#sort-properties').val('default');
+            $('.property-card').show();
+            $('#no-results').addClass('d-none');
+        });
+        
+        // Toggle property status
+        $('.toggle-status').on('click', function() {
+            let propertyId = $(this).data('id');
+            let currentStatus = $(this).data('status');
+            let newStatus = currentStatus === 'Available' ? 'Rented' : 'Available';
+            
+            // Here you would normally make an AJAX call to update the status
+            // For demonstration, let's just show an alert
+            alert('Status would change from ' + currentStatus + ' to ' + newStatus + ' for property ID: ' + propertyId);
+            
+            // In a real implementation, you'd make an AJAX call like:
+            /*
+            $.ajax({
+                url: '/update-property-status/',
+                type: 'POST',
+                data: {
+                    'property_id': propertyId,
+                    'new_status': newStatus,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    // Update UI or reload page
+                    location.reload();
+                },
+                error: function(error) {
+                    console.error('Error updating status:', error);
+                    alert('Failed to update property status. Please try again.');
+                }
+            });
+            */
+        });
+    });
+</script>
+    {% endblock %}

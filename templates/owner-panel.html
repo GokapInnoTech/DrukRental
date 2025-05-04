@@ -1,0 +1,2680 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                <li class="breadcrumb-item active">Owner Panel</li>
+            </ol>
+        </div>
+    </div>
+    
+    <!-- Quick Access Dashboard -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-3">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="#rentals" onclick="$('#rentals-tab').tab('show')" class="d-block text-dark">
+                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width:60px; height:60px; background-color: #007bff;">
+                                    <i class="fa fa-home text-white fa-2x"></i>
+                                </div>
+                                <h5>Rented Properties</h5>
+                                <span class="badge badge-primary">{{ rented_count }}</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="#payments" onclick="$('#payments-tab').tab('show')" class="d-block text-dark">
+                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width:60px; height:60px; background-color: #28a745;">
+                                    <i class="fa fa-credit-card text-white fa-2x"></i>
+                                </div>
+                                <h5>Payments</h5>
+                                <span class="badge badge-success">₹{{ total_earnings|default:"0" }}</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="#users-payments" onclick="$('#users-payments-tab').tab('show')" class="d-block text-dark">
+                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width:60px; height:60px; background-color: #17a2b8;">
+                                    <i class="fa fa-users text-white fa-2x"></i>
+                                </div>
+                                <h5>User & Payments</h5>
+                                <span class="badge badge-info">Manage</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="#reports" onclick="$('#reports-tab').tab('show')" class="d-block text-dark">
+                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width:60px; height:60px; background-color: #ffc107;">
+                                    <i class="fa fa-chart-bar text-white fa-2x"></i>
+                                </div>
+                                <h5>Reports</h5>
+                                <span class="badge badge-warning">Analytics</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Debug section to check what data is available -->
+    <div class="debug-box">
+        <h5>Debug Information</h5>
+        <p>Received messages: {% if messages %}{{ messages|length }}{% else %}0{% endif %}</p>
+        <p>All messages: {% if all_messages %}{{ all_messages|length }}{% else %}0{% endif %}</p>
+        <p>Unread messages: {{ unread_message_count|default:"0" }}</p>
+    </div>
+    
+    <!-- Summary Stats -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-1">
+                <h3>Unread Messages</h3>
+                <h2>{{ unread_message_count|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+                        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-2">
+                <h3>Total Conversations</h3>
+                <h2>{% if all_messages %}{{ all_messages|length }}{% else %}0{% endif %}</h2>
+                <div class="icon">
+                    <i class="fas fa-comments"></i>
+                        </div>
+                    </div>
+                </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-3">
+                <h3>Total Properties</h3>
+                <h2>{{ request.user.userprofile_set.first.house_set.all|length|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-home"></i>
+                            </div>
+                                </div>
+                            </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card gradient-4">
+                <h3>Total Earnings</h3>
+                <h2>₹{{ total_earnings|floatformat:0|default:"0" }}</h2>
+                <div class="icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Links Section -->
+    <div class="card mt-4 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+                <i class="fas fa-link mr-2"></i> Quick Links
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <a href="/add-house/" class="quick-link-card">
+                        <div class="quick-link-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h5>Add New Property</h5>
+                        <p>List a new house for rent</p>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="/house-list/" class="quick-link-card">
+                        <div class="quick-link-icon">
+                            <i class="fas fa-th-list"></i>
+                        </div>
+                        <h5>Manage Properties</h5>
+                        <p>View and edit your properties</p>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'change-password' %}" class="quick-link-card">
+                        <div class="quick-link-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h5>Change Password</h5>
+                        <p>Update your account password</p>
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a href="/profile/" class="quick-link-card">
+                        <div class="quick-link-icon">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h5>View Profile</h5>
+                        <p>Manage your account details</p>
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="/my-house/" class="quick-link-card revenue-card">
+                        <div class="quick-link-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h5>Monthly Revenue</h5>
+                        <h3 class="revenue-amount">₹{{ total_earnings|default:"0" }}</h3>
+                        <p>From rented properties</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Property Statistics -->
+    <div class="row">
+        <div class="col-lg-3 col-sm-6">
+            <div class="card gradient-1">
+                <div class="card-body">
+                    <h3 class="card-title text-white">Total Properties</h3>
+                    <div class="d-inline-block">
+                        <h2 class="text-white">{{ all_properties|default:"0" }}</h2>
+                        <p class="text-white mb-0">Properties you own</p>
+                    </div>
+                    <span class="float-right display-5 opacity-5"><i class="fa fa-home"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card gradient-2">
+                <div class="card-body">
+                    <h3 class="card-title text-white">Available</h3>
+                    <div class="d-inline-block">
+                        <h2 class="text-white">{{ my_available_house|default:"0" }}</h2>
+                        <p class="text-white mb-0">Ready to rent</p>
+                    </div>
+                    <span class="float-right display-5 opacity-5"><i class="fa fa-check-circle"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card gradient-3">
+                <div class="card-body">
+                    <h3 class="card-title text-white">Rented</h3>
+                    <div class="d-inline-block">
+                        <h2 class="text-white">{{ rented_count|default:"0" }}</h2>
+                        <p class="text-white mb-0">Currently occupied</p>
+                    </div>
+                    <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card gradient-4">
+                <div class="card-body">
+                    <h3 class="card-title text-white">Monthly Revenue</h3>
+                    <div class="d-inline-block">
+                        <h2 class="text-white">₹{{ total_earnings|default:"0" }}</h2>
+                        <p class="text-white mb-0">From rented properties</p>
+                    </div>
+                    <span class="float-right display-5 opacity-5"><i class="fa fa-money"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Dashboard Features -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard Features
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            <!-- Dashboard Navigation Tiles -->
+            <div class="dashboard-tiles">
+                <div class="row m-0">
+                    <div class="col-md-3 p-0">
+                        <a href="#rentals" class="dashboard-tile" onclick="$('#rentals-tab').tab('show')">
+                            <div class="tile-icon bg-primary">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="tile-content">
+                                <h5>Rented Properties</h5>
+                                <p class="mb-0">{{ rented_count|default:"0" }} properties rented</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 p-0">
+                        <a href="#payments" class="dashboard-tile" onclick="$('#payments-tab').tab('show')">
+                            <div class="tile-icon bg-success">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="tile-content">
+                                <h5>Payments</h5>
+                                <p class="mb-0">₹{{ total_earnings|default:"0" }} earned</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 p-0">
+                        <a href="#users-payments" class="dashboard-tile" onclick="$('#users-payments-tab').tab('show')">
+                            <div class="tile-icon bg-info">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="tile-content">
+                                <h5>User & Payments</h5>
+                                <p class="mb-0">Manage tenants and payments</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 p-0">
+                        <a href="#reports" class="dashboard-tile" onclick="$('#reports-tab').tab('show')">
+                            <div class="tile-icon bg-warning">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="tile-content">
+                                <h5>Reports</h5>
+                                <p class="mb-0">Analyze your business</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Messaging Section -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+                <i class="fas fa-envelope mr-2"></i> Messaging Center
+                {% if unread_message_count > 0 %}
+                <span class="badge badge-warning ml-2">{{ unread_message_count }} unread</span>
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            <!-- Message Quick Stats -->
+            <div class="message-stats">
+                <div class="row m-0">
+                    <div class="col-md-4 p-0">
+                        <div class="message-stat-card">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h5>Inbox</h5>
+                                <p class="mb-0">{{ messages|length|default:"0" }} messages</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 p-0">
+                        <div class="message-stat-card">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-envelope-open"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h5>Read Messages</h5>
+                                <p class="mb-0">{{ messages|length|default:"0"|subtract:unread_message_count|default:"0" }} messages</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 p-0">
+                        <div class="message-stat-card">
+                            <div class="stat-icon bg-danger">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h5>Unread Messages</h5>
+                                <p class="mb-0">{{ unread_message_count|default:"0" }} messages</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs for different sections -->
+    <ul class="nav nav-tabs mt-4" id="ownerPanelTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="messages-tab" data-toggle="tab" href="#messages" aria-controls="messages" role="tab" aria-selected="true">
+                <i class="fas fa-envelope mr-2"></i>Messages
+                {% if unread_message_count > 0 %}
+                <span class="badge badge-danger ml-1">{{ unread_message_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="ownerPanelTabContent">
+        <!-- Messages Tab -->
+        <div class="tab-pane fade show active" id="messages" aria-labelledby="messages-tab">
+            <!-- Messages Section -->
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Messaging Center</h4>
+                    {% if unread_message_count > 0 %}
+                    <span class="badge badge-warning">{{ unread_message_count }} unread</span>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    <!-- Message Tabs -->
+                    <ul class="nav nav-tabs message-tabs" id="messageTab">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="inbox-tab" data-toggle="tab" href="#inbox">
+                                <i class="fas fa-inbox mr-2"></i>Inbox {% if unread_message_count > 0 %}<span class="badge badge-danger ml-1">{{ unread_message_count }}</span>{% endif %}
+                            </a>
+                    </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="sent-tab" data-toggle="tab" href="#sent">
+                                <i class="fas fa-paper-plane mr-2"></i>Sent
+                            </a>
+                            </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="all-tab" data-toggle="tab" href="#all">
+                                <i class="fas fa-envelope-open-text mr-2"></i>All Messages
+                            </a>
+                    </li>
+                </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="messageTabContent">
+                        <!-- Inbox Tab -->
+                        <div class="tab-pane fade show active" id="inbox">
+                            {% if messages %}
+                            <div class="message-list">
+                                {% for message in messages %}
+                                <div class="message-card {% if not message.is_read %}unread{% endif %}">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            <div class="sender-avatar">
+                                                {% if message.sender.profilePicture %}
+                                                <img src="{{ message.sender.profilePicture.url }}" alt="{{ message.sender.user.first_name }}">
+                                                {% else %}
+                                                <i class="fas fa-user"></i>
+                                                {% endif %}
+            </div>
+                                            <div class="sender-info">
+                                                <h6>{{ message.sender.user.first_name }} {{ message.sender.user.last_name }}</h6>
+                                                <small>{{ message.sender.user.email }}</small>
+        </div>
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            {% if not message.is_read %}
+                                            <span class="badge badge-warning ml-2">New</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        {% if not message.is_read %}
+                                        <a href="/mark-read/{{ message.id }}/" class="btn btn-info btn-mark-read">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </a>
+                                        {% endif %}
+                                        
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#replyModal{{ message.id }}">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Reply Modal -->
+                                <div class="modal fade" id="replyModal{{ message.id }}" tabindex="-2" role="dialog" aria-labelledby="replyModalLabel{{ message.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title" id="replyModalLabel{{ message.id }}">
+                                                    Reply to {{ message.sender.user.first_name }}
+                                                </h4>
+                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="/reply-message/{{ message.id }}/" method="POST" class="reply-form" id="replyForm{{ message.id }}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <!-- Alert for form feedback -->
+                                                    <div class="alert alert-success reply-success" style="display: none;">
+                                                        <i class="fas fa-check-circle mr-3"></i> Your reply has been sent successfully!
+                                                    </div>
+                                                    <div class="alert alert-danger reply-error" style="display: none;">
+                                                        <i class="fas fa-exclamation-circle mr-3"></i> There was an error sending your reply. Please try again.
+                                                    </div>
+                                                    
+                                                    <!-- Technical Information (Collapsed by default) -->
+                                                    <div class="mb-4">
+                                                        <a class="text-muted small" data-toggle="collapse" href="#techInfo{{ message.id }}" role="button">
+                                                            <i class="fas fa-info-circle"></i> Show technical details
+                                                        </a>
+                                                        <div class="collapse mt-3" id="techInfo{{ message.id }}">
+                                                            <div class="card card-body bg-light">
+                                                                <small>
+                                                                    <p class="mb-2"><strong>Message ID:</strong> {{ message.id }}</p>
+                                                                    <p class="mb-2"><strong>Sender ID:</strong> {{ message.sender.id }}</p>
+                                                                    <p class="mb-2"><strong>House ID:</strong> {{ message.house.id }}</p>
+                                                                    <p class="mb-2"><strong>Endpoint:</strong> /reply-message/{{ message.id }}/</p>
+                                                                    <p class="mb-1"><strong>Method:</strong> POST</p>
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Conversation Thread -->
+                                                    <div class="conversation-thread mb-5">
+                                                        <h5 class="text-muted mb-3">Conversation History</h6>
+                                                        <div class="timeline">
+                                                            <div class="timeline-item">
+                                                                <div class="timeline-item-content incoming">
+                                                                    <div class="message-meta d-flex justify-content-between align-items-center mb-3">
+                                                                        <span><strong>{{ message.sender.user.first_name }}</strong></span>
+                                                                        <small class="text-muted">{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}</small>
+                                                                    </div>
+                                                                    <div class="original-message">
+                                                                        <p class="mb-1">{{ message.message }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Previous replies would appear here -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Hidden fields for context -->
+                                                    <input type="hidden" name="conversation_id" value="{{ message.id }}">
+                                                    <input type="hidden" name="recipient_id" value="{{ message.sender.id }}">
+                                                    <input type="hidden" name="house_id" value="{{ message.house.id }}">
+                                                    <input type="hidden" name="recipient_email" value="{{ message.sender.user.email }}">
+                                                    <input type="hidden" name="subject" value="Re: Inquiry about {{ message.house.house_no }}">
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="reply{{ message.id }}">Your Reply:</label>
+                                                        <textarea class="form-control reply-textarea" id="reply{{ message.id }}" name="reply" rows="3" required placeholder="Type your response here..."></textarea>
+                                                        <div class="invalid-feedback">
+                                                            Please enter a message to reply.
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="mr-4">
+                                                            <i class="fas fa-info-circle text-info mr-2"></i>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            Your reply will be sent to {{ message.sender.user.first_name }}'s email ({{ message.sender.user.email }}) and will be available in their message inbox.
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary send-reply-btn">
+                                                        <i class="fas fa-paper-plane mr-2"></i> Send Reply
+                                                        <span class="spinner-border spinner-border-sm ml-2" role="status" style="display: none;">
+                                                            <span class="sr-only">Loading...</span>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <img src="{% static 'AdminStatic/images/no-data.svg' %}" alt="No messages">
+                                <h5>No Messages Yet</h5>
+                                <p>When potential renters contact you about your properties, their messages will appear here.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Sent Tab -->
+                        <div class="tab-pane fade" id="sent">
+                            {% if all_messages %}
+                            <div class="message-list">
+                                {% for message in all_messages %}
+                                {% if message.sender == request.user.userprofile_set.first %}
+                                <div class="message-card">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            <div class="sender-avatar" style="background-color: #5bc0de;">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>To: {{ message.receiver.user.first_name }} {{ message.receiver.user.last_name }}</h6>
+                                                <small>{{ message.receiver.user.email }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            <span class="badge badge-info ml-2">Sent</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <img src="{% static 'AdminStatic/images/no-data.svg' %}" alt="No sent messages">
+                                <h5>No Sent Messages</h5>
+                                <p>Messages you send to potential renters will appear here.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- All Messages Tab -->
+                        <div class="tab-pane fade" id="all">
+                            {% if all_messages %}
+                            <div class="message-list">
+                                {% for message in all_messages %}
+                                <div class="message-card {% if not message.is_read and message.receiver == request.user.userprofile_set.first %}unread{% endif %}">
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            {% if message.sender == request.user.userprofile_set.first %}
+                                            <div class="sender-avatar" style="background-color: #5bc0de;">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>To: {{ message.receiver.user.first_name }} {{ message.receiver.user.last_name }}</h6>
+                                                <small>{{ message.receiver.user.email }}</small>
+                                            </div>
+                                            {% else %}
+                                            <div class="sender-avatar">
+                                                {% if message.sender.profilePicture %}
+                                                <img src="{{ message.sender.profilePicture.url }}" alt="{{ message.sender.user.first_name }}">
+                                                {% else %}
+                                                <i class="fas fa-user"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="sender-info">
+                                                <h6>From: {{ message.sender.user.first_name }} {{ message.sender.user.last_name }}</h6>
+                                                <small>{{ message.sender.user.email }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="message-meta">
+                                            <div class="message-date">
+                                                <i class="far fa-clock mr-1"></i>{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"h:i A" }}
+                                            </div>
+                                            {% if message.sender == request.user.userprofile_set.first %}
+                                            <span class="badge badge-info ml-2">Sent</span>
+                                            {% else %}
+                                                {% if message.is_read %}
+                                                <span class="badge badge-success ml-2">Read</span>
+                                                {% else %}
+                                                <span class="badge badge-warning ml-2">Unread</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-content">
+                                        <div class="message-property">
+                                            <div class="property-icon">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="property-info">
+                                                <h6>{{ message.house.house_no }}</h6>
+                                                <p><i class="fas fa-map-marker-alt mr-1"></i>{{ message.house.area }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="message-text">
+                                            <p>{{ message.message }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-actions">
+                                        {% if message.receiver == request.user.userprofile_set.first and not message.is_read %}
+                                        <a href="/mark-read/{{ message.id }}/" class="btn btn-info btn-mark-read">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if message.receiver == request.user.userprofile_set.first %}
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#replyModal{{ message.id }}">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        {% endif %}
+                                        
+                                        <a href="/view-house/{{ message.house.id }}/" class="btn btn-secondary">
+                                            <i class="fas fa-home"></i> View Property
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <img src="{% static 'AdminStatic/images/no-data.svg' %}" alt="No messages">
+                                <h5>No Messages Yet</h5>
+                                <p>Your messages will appear here once you start communicating with potential renters.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rented Properties Tab -->
+        <div class="tab-pane fade" id="rentals" aria-labelledby="rentals-tab">
+            <!-- Rented Properties Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">Rented Properties</h4>
+                </div>
+                <div class="card-body">
+                    {% if rented_properties %}
+                <div class="row">
+                        {% for property in rented_properties %}
+                        <div class="col-lg-6 col-md-12 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">{{ property.house_no }}, {{ property.area }}</h5>
+                                </div>
+                            <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {% if property.image1 %}
+                                            <img src="{{ property.image1.url }}" class="img-fluid rounded" alt="{{ property.house_no }}">
+                                            {% else %}
+                                            <div class="placeholder-image bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                <i class="fas fa-home fa-4x text-muted"></i>
+                                </div>
+                                            {% endif %}
+                            </div>
+                                        <div class="col-md-6">
+                                            <p><strong>City:</strong> {{ property.city }}</p>
+                                            <p><strong>Room Size:</strong> {{ property.room_size }}</p>
+                                            <p><strong>Monthly Rent:</strong> ₹{{ property.price }}</p>
+                                            <p><strong>Status:</strong> <span class="badge badge-danger">Rented</span></p>
+                        </div>
+                    </div>
+                                    
+                                    <!-- Tenant Details -->
+                                    {% for booking in property.bookingrequest_set.all %}
+                                    {% if booking.status == "Booked" %}
+                                    <div class="mt-3">
+                                        <h6 class="border-bottom pb-2">Tenant Information</h6>
+                                        <p><strong>Name:</strong> {{ booking.user.user.first_name }} {{ booking.user.user.last_name }}</p>
+                                        <p><strong>Contact:</strong> {{ booking.user.contact_No }}</p>
+                                        <p><strong>Email:</strong> {{ booking.user.user.email }}</p>
+                                        <p><strong>Booking Status:</strong> 
+                                            <span class="badge badge-success">{{ booking.status }}</span>
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Payment Status -->
+                                    <div class="mt-3">
+                                        <h6>Payment Status for {{ property.price|floatformat:2 }}</h6>
+                                        
+                                        {% with current_month=now|date:"F Y" has_payment=False %}
+                                        {% for payment in payments_received %}
+                                        {% if payment.booking.house.id == property.id and payment.payment_month == current_month %}
+                                        {% with has_payment=True %}
+                                        <div class="alert {% if payment.status == 'Completed' %}alert-success{% elif payment.status == 'Pending' %}alert-warning{% else %}alert-info{% endif %}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas {% if payment.status == 'Completed' %}fa-check-circle{% elif payment.status == 'Pending' %}fa-clock{% else %}fa-info-circle{% endif %} mr-2"></i>
+                                                    {{ payment.payment_month }} payment - <strong>{{ payment.status }}</strong>
+                                                </div>
+                                                <div>
+                                                    ₹{{ payment.amount_to_owner }} <small class="text-muted">(After 5% platform fee)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endwith %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if not has_payment %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle mr-2"></i> No payment received for {{ current_month }} yet
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <a href="{% url 'view-house' property.id %}" class="btn btn-info">
+                                        <i class="fas fa-eye mr-1"></i> View Details
+                                    </a>
+                                    
+                                    <a href="{% url 'toggle-house-status' property.id %}" class="btn btn-warning" onclick="return confirm('Are you sure you want to mark this property as Available? This will remove the current tenant.')">
+                                        <i class="fas fa-exchange-alt mr-1"></i> Mark as Available
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i> You don't have any rented properties.
+                        <p class="mt-2 mb-0">
+                            When tenants book your properties, they will appear here.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div class="tab-pane fade" id="payments" aria-labelledby="payments-tab">
+            <!-- Payment Overview -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">Payment Overview</h4>
+                </div>
+                            <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">₹{{ total_earnings|floatformat:2 }}</h3>
+                                    <p class="mb-0">Total Earnings</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ pending_payments }}</h3>
+                                    <p class="mb-0">Pending Payments</p>
+                    </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ rented_properties|length }}</h3>
+                                    <p class="mb-0">Rented Properties</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Monthly Earnings Chart -->
+                    <div class="mt-4">
+                        <h5>Monthly Earnings</h5>
+                        <div class="chart-container" style="position: relative; height:250px;">
+                            <canvas id="monthlyEarningsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        // Wait for document ready and ensure we only initialize once
+                        $(document).ready(function() {
+                            // Track if the chart has been initialized
+                            if (window.monthlyEarningsInitialized) return;
+                            
+                            var canvas = document.getElementById('monthlyEarningsChart');
+                            if (!canvas) return;
+                            
+                            var ctx = canvas.getContext('2d');
+                            
+                            // Convert data from Django template
+                            var monthData = {};
+                            // Safely parse the server-side data
+                            var monthlyEarnings = JSON.parse('{{ monthly_earnings|escapejs|safe }}' || '{}');
+                            Object.keys(monthlyEarnings).forEach(function(month) {
+                                monthData[month] = monthlyEarnings[month];
+                            });
+                            
+                            // Prepare arrays for Chart.js
+                            var labels = Object.keys(monthData).sort();
+                            var values = labels.map(function(label) {
+                                return monthData[label];
+                            });
+                            
+                            // Create chart
+                            new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Earnings (₹)',
+                                        data: values,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                            
+                            // Mark as initialized to prevent duplicates
+                            window.monthlyEarningsInitialized = true;
+                        });
+                    </script>
+                    
+                    <!-- Recent Payments -->
+                    <div class="mt-5">
+                        <h5>Recent Payments</h5>
+                        {% if payments_received %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Property</th>
+                                        <th>Tenant</th>
+                                        <th>Amount</th>
+                                        <th>Platform Fee (5%)</th>
+                                        <th>Your Earnings</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments_received|slice:":5" %}
+                                    <tr>
+                                        <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                                        <td>{{ payment.booking.house.house_no }}, {{ payment.booking.house.area }}</td>
+                                        <td>{{ payment.tenant.user.first_name }} {{ payment.tenant.user.last_name }}</td>
+                                        <td>₹{{ payment.amount }}</td>
+                                        <td>₹{{ payment.platform_fee }}</td>
+                                        <td>₹{{ payment.amount_to_owner }}</td>
+                                        <td>
+                                            {% if payment.status == 'Completed' %}
+                                            <span class="badge badge-success">{{ payment.status }}</span>
+                                            {% elif payment.status == 'Pending' %}
+                                            <span class="badge badge-warning">{{ payment.status }}</span>
+                                            {% else %}
+                                            <span class="badge badge-secondary">{{ payment.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'payment-history' %}" class="btn btn-primary">
+                                <i class="fas fa-history mr-1"></i> View Full Payment History
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i> No payment records found.
+                            <p class="mt-2 mb-0">
+                                When tenants make rent payments for your properties, your payment history will appear here.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Bank Details -->
+                    <div class="mt-5">
+                        <h5>Bank Account Details</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <p><strong>Account Holder:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+                                        <p><strong>Bank Name:</strong> **** Bank</p>
+                                        <p><strong>Account Number:</strong> **** **** 1234</p>
+                                        <p><strong>IFSC Code:</strong> ABCD0001234</p>
+                                        <p class="text-muted mt-3 mb-0">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Rent payments are automatically transferred to your bank account within 2-3 business days after payment is received.
+                                        </p>
+                                </div>
+                                    <div class="col-md-4 text-right">
+                                        <button class="btn btn-outline-primary mt-3">
+                                            <i class="fas fa-pencil-alt mr-1"></i> Update Bank Details
+                                        </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User & Payments Tab -->
+        <div class="tab-pane fade" id="users-payments" aria-labelledby="users-payments-tab">
+            <!-- User & Payments Header -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">User & Payments Management</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Track user details and monitor payments effortlessly. With features for managing user information and recording payments, 
+                        this aspect of the system simplifies financial transactions and enhances transparency.
+                    </p>
+
+                    <!-- Quick Stats -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ rented_properties|length }}</h3>
+                                    <p class="mb-0">Total Tenants</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ payments_received|default:0|length }}</h3>
+                                    <p class="mb-0">Total Payments</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">{{ pending_payments|default:"0" }}</h3>
+                                    <p class="mb-0">Pending Payments</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="display-4">₹{{ total_earnings|floatformat:0|default:"0" }}</h3>
+                                    <p class="mb-0">Monthly Revenue</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tenant Management Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-users mr-2"></i> Tenant Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Search and Filter Controls -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="text" id="tenant-search" class="form-control" placeholder="Search tenants...">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button" title="Search">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="tenant-filter" title="Filter properties">
+                                        <option value="">All Properties</option>
+                                        {% for property in rented_properties %}
+                                        <option value="{{ property.id }}">{{ property.house_no }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" id="payment-status-filter" title="Filter payment status">
+                                        <option value="">All Payment Statuses</option>
+                                        <option value="paid">Paid</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="overdue">Overdue</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Tenants List -->
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="tenants-table">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Tenant</th>
+                                            <th>Property</th>
+                                            <th>Contact</th>
+                                            <th>Rent Amount</th>
+                                            <th>Payment Status</th>
+                                            <th>Last Payment</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if rented_properties %}
+                                            {% for property in rented_properties %}
+                                                {% for booking in property.bookingrequest_set.all %}
+                                                {% if booking.status == "Booked" %}
+                                                <tr class="tenant-row" data-property="{{ property.id }}">
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar-sm mr-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                                                                {{ booking.user.user.first_name|first }}{{ booking.user.user.last_name|first }}
+                                                            </div>
+                                                            <div>
+                                                                <h6 class="mb-0">{{ booking.user.user.first_name }} {{ booking.user.user.last_name }}</h6>
+                                                                <small class="text-muted">{{ booking.user.user.email }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{ property.house_no }}, {{ property.area }}</td>
+                                                    <td>{{ booking.user.contact_No }}</td>
+                                                    <td>₹{{ property.price }}</td>
+                                                    <td>
+                                                        <span class="badge badge-success">Paid</span>
+                                                    </td>
+                                                    <td>
+                                                        {% with relevant_payment=False %}
+                                                            {% for payment in payments_received %}
+                                                                {% if payment.booking.id == booking.id and not relevant_payment %}
+                                                                    {{ payment.payment_date|date:"d M Y" }}
+                                                                    {% with relevant_payment=True %}{% endwith %}
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                            {% if not relevant_payment %}
+                                                                N/A
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#viewTenantModal{{ booking.id }}" title="View tenant details">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#contactTenantModal{{ booking.id }}" title="Contact tenant">
+                                                                <i class="fas fa-envelope"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#recordPaymentModal{{ booking.id }}" title="Record payment">
+                                                                <i class="fas fa-money-bill"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4">
+                                                <div class="empty-state">
+                                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                                    <h5>No Tenants Found</h5>
+                                                    <p class="text-muted">You don't have any active tenants at the moment.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Tracking Section -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-money-check-alt mr-2"></i> Payment Tracking</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Payment Calendar -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Payment Calendar</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="payment-calendar" style="height: 380px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                <p class="text-muted">Calendar visualization would appear here showing upcoming and past payments</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Upcoming Payments</h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <ul class="list-group list-group-flush">
+                                                {% for property in rented_properties|slice:":3" %}
+                                                <li class="list-group-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1">{{ property.house_no }}</h6>
+                                                            <small class="text-muted">Due in 5 days</small>
+                                                        </div>
+                                                        <span class="badge badge-warning">₹{{ property.price }}</span>
+                                                    </div>
+                                                </li>
+                                                {% empty %}
+                                                <li class="list-group-item text-center py-4">
+                                                    <p class="text-muted mb-0">No upcoming payments</p>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            <div class="card-footer bg-white text-center">
+                                                <a href="#" class="btn btn-sm btn-outline-primary">View All Payments</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Analytics -->
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h6 class="mb-0">Payment Analytics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="chart-container" style="position: relative; height: 250px;">
+                                                <canvas id="paymentDistributionChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="chart-container" style="position: relative; height: 250px;">
+                                                <canvas id="paymentTrendChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div class="tab-pane fade" id="reports" aria-labelledby="reports-tab">
+            <!-- Reports Header -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">Reports & Analytics</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Generate comprehensive reports on your rental properties, tenants, and financial performance. 
+                        Access visual analytics to gain valuable insights for better decision-making.
+                    </p>
+
+                    <!-- Report Controls -->
+                    <div class="row mb-4 align-items-end">
+                        <div class="col-md-3">
+                            <label for="report-type">Report Type</label>
+                            <select class="form-control" id="report-type">
+                                <option value="financial">Financial Summary</option>
+                                <option value="occupancy">Occupancy Rate</option>
+                                <option value="tenant">Tenant Activity</option>
+                                <option value="property">Property Performance</option>
+                                <option value="custom">Custom Report</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="report-period">Time Period</label>
+                            <select class="form-control" id="report-period">
+                                <option value="month">Current Month</option>
+                                <option value="quarter">Last Quarter</option>
+                                <option value="year">Year to Date</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date-range">Date Range</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="date-range" placeholder="Select date range" disabled>
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary btn-block">
+                                <i class="fas fa-chart-line mr-2"></i> Generate
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Dashboard -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie mr-2"></i> Financial Dashboard</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Revenue Metrics -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-gradient-primary text-white">
+                                        <div class="card-body">
+                                            <h6 class="text-uppercase">Total Revenue</h6>
+                                            <h3 class="mb-0">₹{{ total_earnings|floatformat:0|default:"0" }}</h3>
+                                            <small>+8% from previous period</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-gradient-success text-white">
+                                        <div class="card-body">
+                                            <h6 class="text-uppercase">Avg. Monthly Income</h6>
+                                            <h3 class="mb-0">₹{{ total_earnings|floatformat:0|default:"0"|divisibleby:"3"|default:"0" }}</h3>
+                                            <small>Based on last 3 months</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-gradient-info text-white">
+                                        <div class="card-body">
+                                            <h6 class="text-uppercase">Collection Rate</h6>
+                                            <h3 class="mb-0">95%</h3>
+                                            <small>+2% from previous period</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-gradient-warning text-white">
+                                        <div class="card-body">
+                                            <h6 class="text-uppercase">Profit Margin</h6>
+                                            <h3 class="mb-0">68%</h3>
+                                            <small>After expenses & fees</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Revenue Charts -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Revenue Trend</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="position: relative; height: 300px;">
+                                                <canvas id="revenueTrendChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Revenue Breakdown</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="position: relative; height: 300px;">
+                                                <canvas id="revenueBreakdownChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Occupancy Dashboard -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-home mr-2"></i> Occupancy Dashboard</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Occupancy Metrics -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="text-muted mb-0">Current Occupancy Rate</h5>
+                                            <div class="progress mt-3 mb-3" style="height: 10px;">
+                                                {% with occupancy_rate=rented_properties|length|divisibleby:all_properties|default:100 %}
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ occupancy_rate }}%"
+                                                     aria-valuenow="{{ occupancy_rate|floatformat:0 }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                                {% endwith %}
+                                            </div>
+                                            <h2 class="mb-0">{{ rented_properties|length|divisibleby:all_properties|default:0|floatformat:0 }}%</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="text-muted mb-0">Average Days Vacant</h5>
+                                            <div class="display-4 my-3">12</div>
+                                            <p class="text-success mb-0"><i class="fas fa-arrow-down mr-1"></i> -3 days from average</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="text-muted mb-0">Tenant Turnover Rate</h5>
+                                            <div class="display-4 my-3">8%</div>
+                                            <p class="text-success mb-0"><i class="fas fa-arrow-down mr-1"></i> -2% from last year</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5 class="text-muted mb-0">Avg. Tenancy Duration</h5>
+                                            <div class="display-4 my-3">11</div>
+                                            <p class="text-muted mb-0">months per tenant</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Occupancy Charts -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Occupancy History</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="position: relative; height: 250px;">
+                                                <canvas id="occupancyHistoryChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-white">
+                                            <h6 class="mb-0">Property Performance Comparison</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="position: relative; height: 250px;">
+                                                <canvas id="propertyComparisonChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Tools -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-file-export mr-2"></i> Export Reports</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Download Report Formats</h6>
+                                    <p class="text-muted">Export your reports in different formats for your records or presentations.</p>
+                                    <div class="btn-group mt-3">
+                                        <button type="button" class="btn btn-outline-primary">
+                                            <i class="far fa-file-pdf mr-2"></i> PDF
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success">
+                                            <i class="far fa-file-excel mr-2"></i> Excel
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary">
+                                            <i class="far fa-file-csv mr-2"></i> CSV
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info">
+                                            <i class="far fa-file-image mr-2"></i> Image
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Scheduled Reports</h6>
+                                    <p class="text-muted">Set up automatic report generation and delivery to your email.</p>
+                                    <button type="button" class="btn btn-primary mt-3">
+                                        <i class="fas fa-plus mr-2"></i> Schedule New Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles for the messaging page -->
+<style>
+    /* Modern Dashboard Styling */
+    :root {
+        --primary-color: #7571f9;
+        --primary-light: #9097fb;
+        --primary-dark: #5a57c2;
+        --secondary-color: #fac564;
+        --success-color: #2bc155;
+        --info-color: #5bc0de;
+        --warning-color: #f1b44c;
+        --danger-color: #f44336;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 10px;
+        --card-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        --hover-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .content-body {
+        padding: 1.875rem;
+    }
+    
+    /* Card Design */
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: none;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-3px);
+    }
+    
+    .card-header {
+        border-top-left-radius: var(--border-radius) !important;
+        border-top-right-radius: var(--border-radius) !important;
+        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+        color: white;
+        border: none;
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Dashboard Stats Cards */
+    .stat-card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 25px;
+        margin-bottom: 25px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .gradient-1 {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+    }
+    
+    .gradient-2 {
+        background: linear-gradient(to right, #f6d365, #fda085);
+    }
+    
+    .gradient-3 {
+        background: linear-gradient(to right, #43e97b, #38f9d7);
+    }
+    
+    .gradient-4 {
+        background: linear-gradient(to right, #ff9a9e, #fad0c4);
+    }
+    
+    .stat-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .stat-card h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .stat-card .icon {
+        position: absolute;
+        right: 25px;
+        bottom: 15px;
+        font-size: 4rem;
+        opacity: 0.3;
+    }
+    
+    /* Messages UI */
+    .message-list {
+        margin-top: 20px;
+    }
+    
+    .message-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .message-card:hover {
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .message-card.unread {
+        border-left: 4px solid var(--warning-color);
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background-color: rgba(245,247,250,0.8);
+    }
+    
+    .message-sender {
+        display: flex;
+        align-items: center;
+    }
+    
+    .sender-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+        background-color: var(--primary-light);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .sender-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .sender-info h6 {
+        margin-bottom: 0;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+    .message-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .message-content {
+        padding: 20px;
+    }
+    
+    .message-property {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .property-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: var(--light-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 15px;
+        color: var(--primary-color);
+    }
+    
+    .property-info h6 {
+        margin-bottom: 0;
+        font-weight: 600;
+    }
+    
+    .property-info p {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .message-text {
+        margin-bottom: 15px;
+    }
+    
+    /* Button Styling - Enhanced */
+    .btn {
+        border-radius: 6px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(45deg, #6c757d, #868e96);
+        border: none;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(45deg, #5a6268, #6c757d);
+    }
+    
+    .btn-info {
+        background: linear-gradient(45deg, var(--info-color), #7fccde);
+        border: none;
+    }
+    
+    .btn-info:hover {
+        background: linear-gradient(45deg, #4babc8, var(--info-color));
+    }
+
+    .btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transition: left 0.7s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    /* Message Actions Styling - Enhanced */
+    .message-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 15px 20px;
+        background-color: rgba(245,247,250,0.7);
+        border-top: 1px solid rgba(0,0,0,0.05);
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+    }
+    
+    .message-actions .btn {
+        margin-left: 15px;
+        border-radius: 50px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 140px;
+    }
+    
+    .message-actions .btn i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+    }
+    
+    .message-actions .btn-mark-read {
+        background: linear-gradient(45deg, #20B2AA, #5F9EA0);
+        color: white;
+        border: none;
+    }
+    
+    .message-actions .btn-mark-read:hover {
+        background: linear-gradient(45deg, #5F9EA0, #20B2AA);
+    }
+    
+    .message-actions .btn-primary {
+        background: linear-gradient(45deg, var(--primary-color), #9370DB);
+    }
+    
+    .message-actions .btn-primary:hover {
+        background: linear-gradient(45deg, #9370DB, var(--primary-color));
+    }
+    
+    .message-actions .btn-secondary {
+        background: linear-gradient(45deg, #778899, #708090);
+    }
+    
+    .message-actions .btn-secondary:hover {
+        background: linear-gradient(45deg, #708090, #778899);
+    }
+
+    /* For mobile, make buttons stack on small screens */
+    @media (max-width: 576px) {
+        .message-actions {
+            flex-direction: column;
+        }
+        
+        .message-actions .btn {
+            margin-left: 0;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .message-actions .btn:last-child {
+            margin-bottom: 0;
+        }
+    }
+    
+    /* Badge Styling */
+    .badge {
+        padding: 0.5rem 0.8rem;
+        font-weight: 500;
+        border-radius: 50px;
+    }
+    
+    .badge-primary {
+        background-color: var(--primary-color);
+    }
+    
+    .badge-warning {
+        background-color: var(--warning-color);
+    }
+    
+    .badge-success {
+        background-color: var(--success-color);
+    }
+    
+    .badge-info {
+        background-color: var(--info-color);
+    }
+    
+    /* Tabs */
+    .message-tabs {
+        margin-bottom: 20px;
+    }
+    
+    .message-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.8rem 1rem;
+        font-weight: 600;
+    }
+    
+    .message-tabs .nav-link.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background-color: transparent;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-state img {
+        width: 120px;
+        margin-bottom: 20px;
+        opacity: 0.6;
+    }
+    
+    .empty-state h5 {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .content-body {
+            padding: 1rem;
+        }
+        
+        .stat-card {
+            margin-bottom: 15px;
+        }
+        
+        .message-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .message-date {
+            margin-top: 10px;
+        }
+        
+        .message-actions {
+            justify-content: space-between;
+        }
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .modal-header {
+        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+        color: white;
+        border-bottom: none;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-control {
+        border-radius: 4px;
+        padding: 0.7rem 1rem;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(117, 113, 249, 0.25);
+        border-color: var(--primary-light);
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    /* Fix for modal stacking and animation issues */
+    .modal {
+        will-change: opacity, transform;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    
+    /* Ensure modal stays in foreground */
+    .modal-backdrop.show {
+        opacity: 0.5;
+        z-index: 1040;
+    }
+    
+    .modal.show .modal-dialog {
+        z-index: 1050;
+        transform: none;
+        transition: transform 0.2s ease-out;
+    }
+    
+    /* Focus highlight for textarea */
+    .reply-textarea:focus {
+        box-shadow: 0 0 0 0.25rem rgba(117, 113, 249, 0.3);
+        border-color: #7571f9;
+        outline: none;
+    }
+    
+    /* Prevent modal content from jittering */
+    .modal-open {
+        overflow: hidden;
+        padding-right: 0 !important;
+    }
+    
+    body.modal-open .modal {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    
+    /* Modal dialog should not jump */
+    .modal-dialog {
+        max-width: 700px;
+        margin: 1.75rem auto;
+        transition: transform .2s ease-out;
+    }
+    
+    /* Conversation Thread Styling */
+    .conversation-thread {
+        background-color: var(--light-color);
+        border-radius: 8px;
+        padding: 15px;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 10px;
+    }
+    
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: #e0e0e0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -14px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #e0e0e0;
+        border: 2px solid #fff;
+    }
+    
+    .timeline-item-content {
+        position: relative;
+        padding-left: 15px;
+    }
+    
+    .timeline-item-content.incoming:before {
+        background-color: var(--warning-color);
+    }
+    
+    .timeline-item-content.outgoing:before {
+        background-color: var(--primary-color);
+    }
+    
+    .original-message {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    /* Alert Styling */
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+    
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    /* Form Validation Styling */
+    .reply-form textarea.is-invalid {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 0.2rem rgba(244, 67, 54, 0.25);
+    }
+    
+    /* Debug styles */
+    .debug-box {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    .debug-box pre {
+        margin-bottom: 0;
+    }
+    
+    /* Quick Links styling */
+    .quick-link-card {
+        display: block;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+        color: var(--dark-color);
+        text-decoration: none;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .quick-link-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .quick-link-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: var(--primary-color);
+    }
+    
+    .quick-link-card h5 {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .quick-link-card p {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    /* Revenue Card Specific Styling */
+    .revenue-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid var(--success-color);
+    }
+    
+    .revenue-card:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+    
+    .revenue-card .quick-link-icon {
+        color: var(--success-color);
+    }
+    
+    .revenue-amount {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--success-color);
+        margin: 10px 0;
+    }
+
+    /* Dashboard Tiles Styles */
+    .dashboard-tiles {
+        width: 100%;
+    }
+    
+    .dashboard-tile {
+        display: flex;
+        padding: 20px;
+        border-right: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        color: #333;
+        text-decoration: none !important;
+    }
+    
+    .dashboard-tile:hover {
+        background-color: rgba(0,0,0,0.02);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        color: #333;
+    }
+    
+    .tile-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 24px;
+    }
+    
+    .tile-content h5 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    /* Message Stat Cards Styles */
+    .message-stats {
+        width: 100%;
+    }
+    
+    .message-stat-card {
+        display: flex;
+        padding: 20px;
+        border-right: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .stat-content h5 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    /* Background Colors */
+    .bg-primary { background-color: #007bff; }
+    .bg-success { background-color: #28a745; }
+    .bg-info { background-color: #17a2b8; }
+    .bg-warning { background-color: #ffc107; }
+    .bg-danger { background-color: #dc3545; }
+</style>
+
+<!-- Include custom JS for messages page -->
+<!-- Global error handling -->
+<script>
+    // Global AJAX error handling
+    $(document).ajaxError(function(event, jqXHR, settings, thrownError) {
+        console.error('Global AJAX error handler caught an error:');
+        console.error('Status:', jqXHR.status, 'Error:', thrownError);
+        console.error('URL:', settings.url);
+        
+        // Show a global notification for server errors
+        if (jqXHR.status === 500) {
+            const notification = $(`
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Server error detected. Please try again later or contact support.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+            $('body').append(notification);
+            
+            // Remove notification after 8 seconds
+            setTimeout(function() {
+                notification.alert('close');
+            }, 8000);
+        }
+    });
+
+    // Check for the presence of error parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+        alert('An error occurred: ' + urlParams.get('error'));
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
+
+{% endblock %}
+
+{% block extrajs %}
+<!-- Tab navigation script -->
+<script>
+   $(document).ready(function() {
+    // Activate tab based on URL hash
+    let hash = window.location.hash;
+    if (hash) {
+        $('.nav-tabs a[href="' + hash + '"]').tab('show');
+    }
+
+    // Update URL hash when a tab is shown
+    $('.nav-tabs a').on('shown.bs.tab', function(e) {
+        window.location.hash = e.target.hash;
+    });
+
+    // Explicit tab initialization for #ownerPanelTabs links
+    $('#ownerPanelTabs a').on('click', function(e) {
+        e.preventDefault();
+        $(this).tab('show');
+    });
+
+    // Check URL parameters for specific tab activations
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('show_payments')) {
+        $('.nav-tabs a[href="#payments"]').tab('show');
+    } else if (urlParams.has('rentals')) {
+        $('.nav-tabs a[href="#rentals"]').tab('show');
+    }
+
+    // Hide all modals on page load to clear any stuck state
+    $('.modal').modal('hide');
+
+    // Cleanup modal backdrops and body classes on modal hidden event
+    $(document).on('hidden.bs.modal', '.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+
+    // Handle the reply button click with proper focus management and callback
+    $('[data-toggle="modal"][data-target^="#replyModal"]').on('click', function(e) {
+        e.preventDefault();
+
+        // Get the target modal
+        const targetModalId = $(this).data('target');
+        const $targetModal = $(targetModalId);
+
+        // If any modal is already open, wait for it to fully hide before showing the new one
+        if ($('.modal.show').length) {
+            $('.modal').one('hidden.bs.modal', function() {
+                $targetModal.modal({
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true,
+                    show: true
+                });
+            }).modal('hide');
+        } else {
+            $targetModal.modal({
+                backdrop: true,
+                keyboard: true,
+                focus: true,
+                show: true
+            });
+        }
+
+        // Handle reply form submission within the modal
+        $targetModal.find('form.reply-form').off('submit').on('submit', function(e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const $submitBtn = $form.find('.send-reply-btn');
+            const $spinner = $submitBtn.find('.spinner-border');
+
+            // Disable the button and show spinner
+            $submitBtn.prop('disabled', true);
+            $spinner.show();
+
+            // Submit the form via AJAX
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: $form.serialize(),
+                success: function(response) {
+                    // Show success message, hide error message, and clear the form
+                    $form.find('.alert-success').show();
+                    $form.find('.alert-danger').hide();
+                    $form.find('textarea').val('');
+
+                    // Re-enable the button and hide spinner
+                    $submitBtn.prop('disabled', false);
+                    $spinner.hide();
+
+                    // Close the modal after a delay and refresh the page
+                    setTimeout(function() {
+                        $targetModal.modal('hide');
+                        window.location.reload();
+                    }, 1000);
+                },
+                error: function(xhr, status, error) {
+                    // Show error message and re-enable button
+                    $form.find('.alert-danger').show();
+                    $form.find('.alert-success').hide();
+                    $submitBtn.prop('disabled', false);
+                    $spinner.hide();
+
+                    console.error('Error submitting reply:', error);
+
+                    // Fallback: direct form submission if network issues occur
+                    if (xhr.status === 0 || xhr.status === 500) {
+                        alert('Network issue detected. Trying direct submission...');
+                        $form[0].submit();
+                    }
+                }
+            });
+        });
+    });
+});
+
+</script>
+
+    <!-- Initialize Report Charts -->
+    <script>
+        $(document).ready(function() {
+            // Only initialize charts when the respective tabs are shown
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                let targetId = $(e.target).attr("href");
+                
+                // Initialize Payment Distribution Chart
+                if (targetId === "#users-payments" && $('#paymentDistributionChart').length) {
+                    let paymentDistCtx = document.getElementById('paymentDistributionChart').getContext('2d');
+                    new Chart(paymentDistCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Paid', 'Pending', 'Overdue'],
+                            datasets: [{
+                                data: [70, 20, 10],
+                                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Payment Status Distribution'
+                            }
+                        }
+                    });
+                }
+                
+                // Initialize Payment Trend Chart
+                if (targetId === "#users-payments" && $('#paymentTrendChart').length) {
+                    let paymentTrendCtx = document.getElementById('paymentTrendChart').getContext('2d');
+                    new Chart(paymentTrendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Payment Trend',
+                                data: [12000, 19000, 15000, 21000, 18000, 22000],
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                borderColor: '#007bff',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#007bff',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function(value) {
+                                            return '₹' + value;
+                                        }
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Monthly Payment Trends'
+                            }
+                        }
+                    });
+                }
+                
+                // Initialize Revenue Trend Chart
+                if (targetId === "#reports" && $('#revenueTrendChart').length) {
+                    let revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+                    new Chart(revenueTrendCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Revenue',
+                                data: [30000, 35000, 28000, 39000, 42000, 50000],
+                                backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                            }, {
+                                label: 'Expenses',
+                                data: [12000, 14000, 11000, 15000, 16000, 18000],
+                                backgroundColor: 'rgba(220, 53, 69, 0.7)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function(value) {
+                                            return '₹' + value;
+                                        }
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue vs Expenses'
+                            }
+                        }
+                    });
+                }
+                
+                // Initialize Revenue Breakdown Chart
+                if (targetId === "#reports" && $('#revenueBreakdownChart').length) {
+                    let revenueBreakdownCtx = document.getElementById('revenueBreakdownChart').getContext('2d');
+                    new Chart(revenueBreakdownCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Rent', 'Deposits', 'Late Fees', 'Other'],
+                            datasets: [{
+                                data: [75, 15, 5, 5],
+                                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#6c757d'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue Sources'
+                            }
+                        }
+                    });
+                }
+                
+                // Initialize Occupancy History Chart
+                if (targetId === "#reports" && $('#occupancyHistoryChart').length) {
+                    let occupancyHistoryCtx = document.getElementById('occupancyHistoryChart').getContext('2d');
+                    new Chart(occupancyHistoryCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Occupancy Rate (%)',
+                                data: [85, 87, 82, 90, 95, 92],
+                                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                                borderColor: '#17a2b8',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#17a2b8',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: false,
+                                        min: 50,
+                                        max: 100,
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Monthly Occupancy Rate'
+                            }
+                        }
+                    });
+                }
+                
+                // Initialize Property Comparison Chart
+                if (targetId === "#reports" && $('#propertyComparisonChart').length) {
+                    let propertyComparisonCtx = document.getElementById('propertyComparisonChart').getContext('2d');
+                    new Chart(propertyComparisonCtx, {
+                        type: 'horizontalBar',
+                        data: {
+                            labels: ['Property A', 'Property B', 'Property C', 'Property D'],
+                            datasets: [{
+                                label: 'Occupancy Rate (%)',
+                                data: [95, 88, 100, 75],
+                                backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                            }, {
+                                label: 'ROI (%)',
+                                data: [12, 9, 14, 8],
+                                backgroundColor: 'rgba(0, 123, 255, 0.7)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                xAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    }
+                                }]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Property Performance Metrics'
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Filter functionality for tenants table
+            $('#tenant-search').on('keyup', function() {
+                let value = $(this).val().toLowerCase();
+                $('#tenants-table tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+            
+            $('#tenant-filter, #payment-status-filter').on('change', function() {
+                let propertyValue = $('#tenant-filter').val();
+                let statusValue = $('#payment-status-filter').val();
+                
+                $('#tenants-table tbody tr').show();
+                
+                if (propertyValue) {
+                    $('#tenants-table tbody tr').not(`[data-property="${propertyValue}"]`).hide();
+                }
+                
+                if (statusValue) {
+                    $('#tenants-table tbody tr:visible').each(function() {
+                        let statusText = $(this).find('td:nth-child(5) span').text().toLowerCase();
+                        if (statusText !== statusValue) {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+            
+            // Toggle date range input when custom range is selected
+            $('#report-period').on('change', function() {
+                if ($(this).val() === 'custom') {
+                    $('#date-range').prop('disabled', false);
+                } else {
+                    $('#date-range').prop('disabled', true);
+                }
+            });
+        });
+    </script>
+
+    <!-- Monthly Earnings Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Simple fix for the break tag issue
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all tenant payment cells that need fixing
+            const paymentCells = document.querySelectorAll('.tenant-payment-cell');
+            
+            paymentCells.forEach(cell => {
+                // Get all payment date elements in the cell
+                const paymentDates = cell.querySelectorAll('.payment-date');
+                
+                // If there are multiple payment dates, keep only the first one
+                if (paymentDates.length > 1) {
+                    for (let i = 1; i < paymentDates.length; i++) {
+                        paymentDates[i].remove();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock extrajs %}

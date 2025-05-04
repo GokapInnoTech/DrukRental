@@ -1,0 +1,217 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+<!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+
+        <div class="container-fluid mt-3">
+            <div class="content-body">
+                <div class="row page-titles mx-0">
+                    <div class="col p-md-0">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Customer Requests</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Property Booking Requests</h4>
+                                    <p class="text-muted mb-0">Manage booking requests from potential tenants for your properties.</p>
+                                </div>
+                                <div class="card-body">
+                                    {% if messages %}
+                                    <div class="alert alert-info alert-dismissible fade show">
+                                        {% for message in messages %}
+                                            {{ message }}
+                                        {% endfor %}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if requests %}
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="thead-primary">
+                                                <tr>
+                                                    <th>Request</th>
+                                                    <th>Customer Details</th>
+                                                    <th>Property</th>
+                                                    <th>Request Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for r in requests %}
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge badge-warning">Pending</span>
+                                                        <div class="mt-1">ID: #{{r.id}}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="user-img mr-3">
+                                                                {% if r.user.profilePicture %}
+                                                                <img src="{{r.user.profilePicture.url}}" class="img-fluid rounded-circle" width="40" alt="User">
+                                                                {% else %}
+                                                                <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                                    <i class="fa fa-user"></i>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="user-info">
+                                                                <h6 class="mb-0">{{r.user.user.first_name}} {{r.user.user.last_name}}</h6>
+                                                                <small><i class="fa fa-envelope mr-1"></i> {{r.user.user.email}}</small>
+                                                                <div><i class="fa fa-phone mr-1"></i> {{r.user.contact_No}}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <h6 class="mb-0">{{r.house.house_no}}</h6>
+                                                        <div><i class="fa fa-map-marker mr-1"></i> {{r.house.area}}</div>
+                                                        <div class="text-primary">₹{{r.house.rent}}/month</div>
+                                                    </td>
+                                                    <td>
+                                                        <div>{{r.created_at|date:"M d, Y"}}</div>
+                                                        <small>{{r.created_at|time:"h:i A"}}</small>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a href="/approve-customer-request/{{r.id}}/" title="Approve" class="btn btn-success text-white">
+                                                                <i class="fa fa-check mr-1"></i> Approve
+                                                            </a>
+                                                            <button type="button" class="btn btn-danger text-white" data-toggle="modal" data-target="#deleteModal{{r.id}}">
+                                                                <i class="fa fa-times mr-1"></i> Reject
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <!-- Delete Modal -->
+                                                        <div class="modal fade" id="deleteModal{{r.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Confirm Rejection</h5>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p>Are you sure you want to reject the booking request from <strong>{{r.user.user.first_name}} {{r.user.user.last_name}}</strong> for property <strong>{{r.house.house_no}}</strong>?</p>
+                                                                        <p class="text-danger"><small>This action cannot be undone.</small></p>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                        <a href="/delete-booking/{{r.id}}/" class="btn btn-danger">Confirm Rejection</a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <img src="{% static 'AdminStatic/images/no-data.svg' %}" alt="No requests" style="width: 120px; opacity: 0.6;" class="mb-3">
+                                        <h4 class="text-muted">No Pending Requests</h4>
+                                        <p>There are currently no pending booking requests for your properties.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            /* Custom styling for Customer Request page */
+            .content-body {
+                min-height: calc(100vh - 170px);
+            }
+            .card {
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                margin-bottom: 30px;
+            }
+            .card-header {
+                background: linear-gradient(to right, #7571f9, #9097fb);
+                color: #fff;
+                border-radius: 8px 8px 0 0;
+                padding: 1.2rem 1.5rem;
+            }
+            .card-title {
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+            .thead-primary th {
+                background-color: #f3f3f9;
+                color: #464a53;
+                font-weight: 500;
+                border-top: none;
+            }
+            .table-hover tbody tr:hover {
+                background-color: rgba(117, 113, 249, 0.05);
+            }
+            .badge-warning {
+                background-color: #ffb800;
+                padding: 0.4em 0.6em;
+                font-weight: 400;
+            }
+            .btn-group .btn {
+                border-radius: 4px;
+                margin-right: 5px;
+                font-size: 0.85rem;
+                padding: 0.375rem 0.75rem;
+            }
+            .modal-content {
+                border-radius: 8px;
+                border: none;
+            }
+            .modal-header {
+                background-color: #f8f9fa;
+                border-radius: 8px 8px 0 0;
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 767px) {
+                .container-fluid {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+                .table td, .table th {
+                    padding: 0.5rem;
+                }
+                .btn-group {
+                    display: flex;
+                    flex-direction: column;
+                }
+                .btn-group .btn {
+                    margin-right: 0;
+                    margin-bottom: 5px;
+                }
+            }
+        </style>
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    {% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+<!--**********************************
+            Sidebar end
+        ***********************************-->
+
+<!--**********************************
+            Content body start
+        ***********************************-->
+<div class="content-body">
+<script>
+    console.log('{{house_details}}')
+</script>
+<style>
+    /* Enhanced view-house styling */
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: none;
+        margin-bottom: 25px;
+    }
+    
+    .card-body {
+        padding: 25px;
+    }
+    
+    .card-text {
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+    
+    .card-text b {
+        color: #333;
+        font-weight: 600;
+        margin-right: 8px;
+    }
+    
+    .submit-btn {
+        padding: 12px 25px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        border-radius: 30px !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin: 0 10px 15px 10px;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .container-fluid {
+        padding: 30px 40px;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+    
+    /* Image slider enhancements */
+    #slider-wrap {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    }
+    
+    #slider-wrap img {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    /* Messaging section styling */
+    .messaging-section {
+        margin-top: 40px;
+        margin-bottom: 30px;
+    }
+    
+    .messaging-section .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .messaging-section .card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .messaging-section .card-body {
+        padding: 25px;
+    }
+    
+    .messaging-section .alert {
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .messaging-section .form-group label {
+        font-weight: 500;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .messaging-section textarea {
+        border-radius: 8px;
+        resize: none;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .messaging-section button {
+        padding: 10px 25px;
+        font-weight: 500;
+        border-radius: 30px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .messaging-section button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Action buttons alignment */
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .action-buttons .text-center {
+        margin: 5px 10px;
+    }
+</style>
+
+    <div class="container-fluid" style="background-color: rgb(245, 247, 250); min-height: 150vh;">
+        <div class="container pt-4">
+            <div class="card-deck">
+                <div class="card bg-white">
+                    <div class="card-body text-left" style="padding-top: 30px;">
+                        <p class="card-text"><b>OWNER NAME:</b> {{house_details.user.user.first_name}}
+                            {{house_details.user.user.last_name}}</p>
+                        <p class="card-text"><b>HOUSE NO.:</b> {{house_details.house_no}}</p>
+                        <p class="card-text"><b>OWNER CONTACT NO.:</b> {{house_details.user.contact_No}}</p>
+                        <p class="card-text"><b>ROOM SIZE:</b> {{house_details.room_size}}</p>
+                        <p class="card-text"><b>AREA:</b> {{house_details.area}}</p>
+                        <p class="card-text"><b>CITY:</b> {{house_details.city}}</p>
+                        <p class="card-text"><b>PINCODE:</b> {{house_details.pincode}}</p>
+                        <p class="card-text"><b>STATUS:</b> <span class="badge {% if house_details.status == 'Available' %}badge-success{% else %}badge-danger{% endif %}">{{house_details.status}}</span></p>
+                        <p class="card-text"><b>PRICE:</b> <span class="text-primary font-weight-bold">₹{{house_details.price}}</span></p>
+                    </div>
+                </div>
+
+                <div id="wrapper">
+                    <div id="slider-wrap">
+                        <ul id="slider" class="mt-2">
+                            <li data-color="#1abc9c">
+                                <img src="{{house_details.image1.url}}" style="height: 350px; width: 500px;" alt="House Image 1">
+                            </li>
+                            <br>
+                            <li data-color="#3498db">
+                                <img src="{{house_details.image2.url}}" style="height: 350px; width: 500px;" alt="House Image 2">
+                            </li>
+                        </ul>
+                        <!--controls-->
+                        <!--controls-->
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                {% if request.user.userprofile_set.first.userType == "Public" %}
+                {% if house_details.status == "Available" %}
+                <div class="text-center pt-3">
+                    <a href="/book-house/{{house_details.id}}/">
+                        <button class="btn btn-primary submit-btn">Book Now</button>
+                    </a>
+                </div>
+                {%endif%}
+                {%endif%}
+                {% if request.user.userprofile_set.first.userType == "Owner" %}
+                {% if house_details.status == "Booked" %}
+                <div class="text-center pt-3">
+                    <a href="{% url 'available-house' house_details.id %}">
+                        <button class="btn btn-success submit-btn">Available Now</button>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="text-center pt-3">
+                    <a href="/edit-house/{{house_details.id}}">
+                        <button class="btn btn-warning submit-btn">Edit House</button>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="text-center pt-3">
+                    {% if house_details.location %}
+                    <a href="/location/{{house_details.id}}" target="_blank">
+                        <button class="btn btn-info submit-btn">See Location</button>
+                    </a>
+                    {% else %}
+                    <p class="text-danger">❌ Location Not Available</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Messaging System - For regular users to contact house owners -->
+            {% if request.user.is_authenticated and request.user.userprofile_set.first.userType == "Public" %}
+            <div class="row justify-content-center messaging-section">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Contact House Owner</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if message_sent %}
+                            <div class="alert alert-success" role="alert">
+                                <i class="fa fa-check-circle mr-2"></i> Your message has been sent successfully to the house owner!
+                            </div>
+                            {% endif %}
+                            <form action="/send-message/{{house_details.id}}/" method="POST">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="message"><i class="fa fa-envelope mr-1"></i> Your Message to the House Owner</label>
+                                    <textarea name="message" id="message" rows="5" class="form-control" placeholder="Write your message to the house owner. You can ask about availability, amenities, neighborhood, etc..." required></textarea>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-paper-plane mr-1"></i> Send Message
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+<!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+<!--**********************************
+        Scripts
+    ***********************************-->
+{% endblock %}

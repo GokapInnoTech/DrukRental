@@ -1,0 +1,310 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-body">
+    <!-- Page header -->
+    <div class="row page-titles mx-0">
+        <div class="col p-md-0">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/user-panel/">User Panel</a></li>
+                <li class="breadcrumb-item active">Make Payment</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Rent Payment</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Payment Summary -->
+                        <div class="payment-summary mb-4">
+                            <h5 class="mb-3">Payment Details</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Property:</strong> {{ house.house_no }}, {{ house.area }}</p>
+                                            <p><strong>Owner:</strong> {{ owner.user.first_name }} {{ owner.user.last_name }}</p>
+                                            <p><strong>Month:</strong> {{ payment.payment_month }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Rent Amount:</strong> ₹{{ payment.amount }}</p>
+                                            <p><strong>Platform Fee (5%):</strong> ₹{{ payment.platform_fee }}</p>
+                                            <p><strong>Total:</strong> ₹{{ payment.amount }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Form -->
+                        <form action="{% url 'process-payment' payment.id %}" method="POST" id="paymentForm">
+                            {% csrf_token %}
+                            
+                            {% if messages %}
+                            <div class="alert alert-danger">
+                                {% for message in messages %}
+                                {{ message }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Payment Method Selection -->
+                            <div class="form-group">
+                                <label for="payment_method">Select Payment Method</label>
+                                <select class="form-control" id="payment_method" name="payment_method" required>
+                                    <option value="">-- Select Payment Method --</option>
+                                    <option value="Credit Card">Credit Card</option>
+                                    <option value="Debit Card">Debit Card</option>
+                                    <option value="Net Banking">Net Banking</option>
+                                    <option value="UPI">UPI</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Credit/Debit Card Details (shown when card is selected) -->
+                            <div id="cardDetails" style="display: none;">
+                                <div class="form-group">
+                                    <label for="card_number">Card Number</label>
+                                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19">
+                                    <small class="form-text text-muted">Enter the 16-digit card number without spaces</small>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="expiry_date">Expiry Date</label>
+                                            <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY" maxlength="5">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="cvv">CVV</label>
+                                            <input type="password" class="form-control" id="cvv" name="cvv" placeholder="123" maxlength="3">
+                                            <small class="form-text text-muted">3-digit code on the back of your card</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="name_on_card">Name on Card</label>
+                                    <input type="text" class="form-control" id="name_on_card" name="name_on_card" placeholder="John Doe">
+                                </div>
+                            </div>
+                            
+                            <!-- UPI Details (shown when UPI is selected) -->
+                            <div id="upiDetails" style="display: none;">
+                                <div class="form-group">
+                                    <label for="upi_id">UPI ID</label>
+                                    <input type="text" class="form-control" id="upi_id" name="upi_id" placeholder="yourname@upi">
+                                    <small class="form-text text-muted">Enter your UPI ID e.g. name@bank</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Net Banking Details (shown when Net Banking is selected) -->
+                            <div id="netBankingDetails" style="display: none;">
+                                <div class="form-group">
+                                    <label for="bank_name">Select Bank</label>
+                                    <select class="form-control" id="bank_name" name="bank_name">
+                                        <option value="">-- Select Your Bank --</option>
+                                        <option value="SBI">State Bank of India</option>
+                                        <option value="HDFC">HDFC Bank</option>
+                                        <option value="ICICI">ICICI Bank</option>
+                                        <option value="Axis">Axis Bank</option>
+                                        <option value="PNB">Punjab National Bank</option>
+                                        <option value="BOB">Bank of Baroda</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="agree_terms" name="agree_terms" required>
+                                <label class="form-check-label" for="agree_terms">I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a> and authorize this payment</label>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-credit-card mr-2"></i> Pay ₹{{ payment.amount }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Disclaimer Card -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Secure Payment</h5>
+                        <p class="card-text">
+                            <i class="fas fa-lock mr-2 text-success"></i>
+                            All transactions are secure and encrypted. Your payment information is never stored on our servers.
+                        </p>
+                        <p class="card-text small">
+                            <strong>Note:</strong> This is a simulated payment for demonstration purposes. No actual payment will be processed. In a production environment, a secure payment gateway would be integrated here.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Payment Terms and Conditions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>Payment Terms</h6>
+                <p>1. Rent payments are due on the 1st of each month.</p>
+                <p>2. A service fee of 5% will be charged on each payment as a platform fee.</p>
+                <p>3. Late payments may result in additional fees as per your rental agreement.</p>
+                <p>4. All payments are processed securely through our payment gateway.</p>
+                
+                <h6>Refund Policy</h6>
+                <p>1. Rent payments are generally non-refundable once processed.</p>
+                <p>2. In case of an error or double payment, please contact support within 48 hours.</p>
+                <p>3. Refunds, if approved, will be processed within 7-10 business days.</p>
+                
+                <h6>Privacy and Security</h6>
+                <p>1. Your payment information is encrypted and secure.</p>
+                <p>2. We do not store your complete credit card information on our servers.</p>
+                <p>3. By proceeding with the payment, you authorize the platform to charge the specified amount.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="agreeTerms">I Agree</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        // Handle payment method change
+        $('#payment_method').change(function() {
+            var method = $(this).val();
+            
+            // Hide all payment detail sections
+            $('#cardDetails, #upiDetails, #netBankingDetails').hide();
+            
+            // Show the appropriate section based on selection
+            if (method === 'Credit Card' || method === 'Debit Card') {
+                $('#cardDetails').show();
+            } else if (method === 'UPI') {
+                $('#upiDetails').show();
+            } else if (method === 'Net Banking') {
+                $('#netBankingDetails').show();
+            }
+        });
+        
+        // Format card number with spaces
+        $('#card_number').on('input', function() {
+            var val = $(this).val().replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            var formatted = '';
+            
+            for (var i = 0; i < val.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += ' ';
+                }
+                formatted += val[i];
+            }
+            
+            $(this).val(formatted);
+        });
+        
+        // Format expiry date (MM/YY)
+        $('#expiry_date').on('input', function() {
+            var val = $(this).val().replace(/\D/g, '');
+            
+            if (val.length > 2) {
+                val = val.substring(0, 2) + '/' + val.substring(2, 4);
+            }
+            
+            $(this).val(val);
+        });
+        
+        // Terms and conditions agreement
+        $('#agreeTerms').click(function() {
+            $('#agree_terms').prop('checked', true);
+        });
+        
+        // Form validation
+        $('#paymentForm').submit(function(e) {
+            var method = $('#payment_method').val();
+            
+            if (method === 'Credit Card' || method === 'Debit Card') {
+                var cardNumber = $('#card_number').val().replace(/\s+/g, '');
+                var expiry = $('#expiry_date').val();
+                var cvv = $('#cvv').val();
+                var nameOnCard = $('#name_on_card').val();
+                
+                if (!cardNumber || cardNumber.length < 16) {
+                    alert('Please enter a valid card number');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (!expiry || expiry.length < 5) {
+                    alert('Please enter a valid expiry date (MM/YY)');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (!cvv || cvv.length < 3) {
+                    alert('Please enter a valid CVV code');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (!nameOnCard) {
+                    alert('Please enter the name on your card');
+                    e.preventDefault();
+                    return false;
+                }
+            } else if (method === 'UPI') {
+                var upiId = $('#upi_id').val();
+                
+                if (!upiId || !upiId.includes('@')) {
+                    alert('Please enter a valid UPI ID');
+                    e.preventDefault();
+                    return false;
+                }
+            } else if (method === 'Net Banking') {
+                var bankName = $('#bank_name').val();
+                
+                if (!bankName) {
+                    alert('Please select your bank');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            // Check terms agreement
+            if (!$('#agree_terms').is(':checked')) {
+                alert('Please agree to the terms and conditions');
+                e.preventDefault();
+                return false;
+            }
+            
+            return true;
+        });
+    });
+</script>
+{% endblock %} 

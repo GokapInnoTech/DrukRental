@@ -1,0 +1,144 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block content %}
+
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+
+            <div class="container-fluid mt-5">
+                <div class="row">
+                    {% if request.user.userprofile_set.first.userType == "Public" %}
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-2">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">My Total Booking</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{my_booking}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-shopping-cart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-1">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total Available Room</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{available_house}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-heart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if request.user.userprofile_set.first.userType == "Owner" %}
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-2">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">My House</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{my_house}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-shopping-cart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-1">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total Available Room</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{my_available_house}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-heart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if request.user.userprofile_set.first.userType == "Admin" %}
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-2">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total No. of Verified House Owner</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{total_verified_owner}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-shopping-cart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-2">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total No. of Unverified House Owner</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{total_unverified_owner}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-shopping-cart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-1">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total Available Room</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{available_house}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-heart"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-3">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total Booked Room</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{booked_house}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-3">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total verified Admin</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{total_verified_admin}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="card gradient-3">
+                            <div class="card-body">
+                                <h3 class="card-title text-white">Total Unverified Admin</h3>
+                                <div class="d-inline-block">
+                                    <h2 class="text-white">{{total_unverified_admin}}</h2>
+                                </div>
+                                <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+{% endblock %}
